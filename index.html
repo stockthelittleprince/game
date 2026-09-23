@@ -1,317 +1,3341 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>街頭異能大亂鬥 3D - NextGen</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #000; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    #canvas-container { width: 100vw; height: 100vh; position: relative; }
-    
-    /* HUD 介面設計 */
-    .hud-layer {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; padding: 20px;
-      display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .player-stats {
-      background: rgba(15, 15, 25, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 15px 20px; border-radius: 12px;
-      width: 320px; backdrop-filter: blur(8px);
-    }
-    .bar-bg { background: #222; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 6px; }
-    .bar-fill { height: 100%; transition: width 0.1s ease; }
-    .hp-fill { background: linear-gradient(90deg, #ff416c, #ff4b2b); }
-    .mp-fill { background: linear-gradient(90deg, #1e3c72, #2a5298); }
-    
-    .skill-slots {
-      display: flex; gap: 12px; margin-top: 10px;
-    }
-    .skill-box {
-      width: 50px; height: 50px; background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 10px; color: #fff; position: relative;
-    }
-    .skill-key { font-weight: bold; color: #ffca28; font-size: 14px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>異能亂鬥：覺醒者 Arena</title>
 
-    .controls-hint {
-      position: absolute; bottom: 20px; right: 20px;
-      background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px;
-      color: #aaa; font-size: 12px; line-height: 1.6;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    overflow:hidden;
+    background:#050509;
+    font-family:"Segoe UI","Microsoft JhengHei",sans-serif;
+    color:white;
+    user-select:none;
+}
+
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+}
+
+canvas{
+    display:block;
+}
+
+/* ================= HUD ================= */
+
+#hud{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+.top-ui{
+    position:absolute;
+    top:22px;
+    left:25px;
+    width:390px;
+}
+
+.player-panel{
+    background:linear-gradient(
+        135deg,
+        rgba(8,10,18,.94),
+        rgba(18,20,32,.82)
+    );
+
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:14px;
+
+    padding:15px 18px;
+
+    box-shadow:
+        0 12px 40px rgba(0,0,0,.45),
+        inset 0 0 30px rgba(255,255,255,.025);
+
+    backdrop-filter:blur(12px);
+}
+
+.character-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.character-name{
+    font-size:21px;
+    font-weight:800;
+    letter-spacing:1px;
+}
+
+.level{
+    font-size:11px;
+    color:#aaa;
+}
+
+.bar{
+    height:13px;
+    background:#161820;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:7px;
+    border:1px solid rgba(255,255,255,.07);
+}
+
+.bar-fill{
+    height:100%;
+    width:100%;
+    transition:width .15s;
+}
+
+.hp{
+    background:linear-gradient(90deg,#ff315c,#ff6847);
+    box-shadow:0 0 12px rgba(255,50,70,.55);
+}
+
+.mp{
+    background:linear-gradient(90deg,#347cff,#56c8ff);
+    box-shadow:0 0 12px rgba(40,130,255,.4);
+}
+
+.bar-text{
+    position:absolute;
+    font-size:9px;
+    margin-top:-23px;
+    margin-left:8px;
+    opacity:.75;
+}
+
+/* ================= SKILLS ================= */
+
+.skills{
+    display:flex;
+    gap:9px;
+    margin-top:13px;
+}
+
+.skill{
+    width:67px;
+    height:67px;
+
+    position:relative;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.11),
+            rgba(255,255,255,.035)
+        );
+
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:10px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    overflow:hidden;
+
+    box-shadow:
+        inset 0 0 20px rgba(0,0,0,.3);
+}
+
+.skill-key{
+    position:absolute;
+    top:4px;
+    left:6px;
+    font-size:11px;
+    color:#ffd45a;
+    font-weight:bold;
+}
+
+.skill-icon{
+    font-size:25px;
+    margin-bottom:3px;
+}
+
+.skill-name{
+    font-size:9px;
+    color:#ddd;
+}
+
+.cooldown{
+    position:absolute;
+    inset:0;
+
+    background:rgba(0,0,0,.68);
+
+    display:none;
+    align-items:center;
+    justify-content:center;
+
+    font-size:19px;
+    font-weight:bold;
+}
+
+/* ================= TARGET ================= */
+
+.enemy-ui{
+    position:absolute;
+    top:25px;
+    right:25px;
+
+    width:300px;
+
+    background:rgba(8,8,14,.88);
+
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:12px;
+
+    padding:13px 16px;
+}
+
+.enemy-title{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.enemy-name{
+    font-weight:bold;
+}
+
+.enemy-level{
+    font-size:11px;
+    color:#888;
+}
+
+.enemy-bar{
+    height:12px;
+    background:#15151c;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.enemy-hp{
+    height:100%;
+    width:100%;
+    background:linear-gradient(90deg,#c42bff,#ff3d7a);
+    transition:width .15s;
+}
+
+/* ================= BOTTOM ================= */
+
+.bottom-ui{
+    position:absolute;
+    bottom:22px;
+    left:25px;
+    right:25px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+}
+
+.controls{
+    background:rgba(5,5,10,.8);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;
+    padding:11px 15px;
+
+    color:#aaa;
+    font-size:11px;
+    line-height:1.7;
+
+    backdrop-filter:blur(10px);
+}
+
+.controls b{
+    color:#fff;
+}
+
+.character-switch{
+    display:flex;
+    gap:7px;
+}
+
+.switch-btn{
+    pointer-events:auto;
+
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(10,10,18,.82);
+
+    color:white;
+
+    padding:8px 12px;
+
+    border-radius:7px;
+
+    cursor:pointer;
+
+    font-size:11px;
+
+    transition:.15s;
+}
+
+.switch-btn:hover{
+    background:rgba(255,255,255,.15);
+}
+
+.switch-btn.active{
+    border-color:#fff;
+    box-shadow:0 0 15px rgba(255,255,255,.18);
+}
+
+/* ================= DAMAGE ================= */
+
+.damage-number{
+    position:absolute;
+    pointer-events:none;
+
+    font-weight:900;
+
+    font-size:20px;
+
+    text-shadow:
+        0 2px 5px #000,
+        0 0 12px currentColor;
+
+    animation:damageFloat .65s ease-out forwards;
+}
+
+@keyframes damageFloat{
+    0%{
+        transform:translate(-50%,0) scale(.6);
+        opacity:0;
     }
-  </style>
-  <!-- 引入 Three.js 3D 渲染引擎 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    20%{
+        opacity:1;
+        transform:translate(-50%,-10px) scale(1.2);
+    }
+
+    100%{
+        transform:translate(-50%,-70px) scale(.85);
+        opacity:0;
+    }
+}
+
+/* ================= CENTER MESSAGE ================= */
+
+#center-message{
+    position:absolute;
+    left:50%;
+    top:48%;
+
+    transform:translate(-50%,-50%);
+
+    font-size:48px;
+    font-weight:900;
+
+    letter-spacing:6px;
+
+    opacity:0;
+
+    text-shadow:
+        0 0 20px currentColor,
+        0 0 50px currentColor;
+
+    pointer-events:none;
+}
+
+@keyframes centerPop{
+    0%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(.4);
+    }
+
+    25%{
+        opacity:1;
+        transform:translate(-50%,-50%) scale(1.15);
+    }
+
+    100%{
+        opacity:0;
+        transform:translate(-50%,-50%) scale(1.4);
+    }
+}
+</style>
 </head>
+
 <body>
 
-  <div id="canvas-container">
-    <div class="hud-layer">
-      <div class="player-stats">
-        <h3 id="char-name" style="color: #fff;">烈焰法爾 (3D 異能型)</h3>
-        <div class="bar-bg"><div id="hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
-        <div class="bar-bg"><div id="mp-bar" class="bar-fill mp-fill" style="width: 100%;"></div></div>
-        
-        <div class="skill-slots">
-          <div class="skill-box"><span class="skill-key">U</span><span id="s1-name">爆炎陣</span></div>
-          <div class="skill-box"><span class="skill-key">I</span><span id="s2-name">烈焰衝鋒</span></div>
-          <div class="skill-box"><span class="skill-key">O</span><span id="s3-name">天劫隕石</span></div>
+<div id="game">
+
+<div id="hud">
+
+    <div class="top-ui">
+
+        <div class="player-panel">
+
+            <div class="character-title">
+                <div>
+                    <div class="character-name" id="player-name">
+                        烈焰法爾
+                    </div>
+
+                    <div class="level" id="player-type">
+                        覺醒者・炎
+                    </div>
+                </div>
+
+                <div class="level">
+                    LV.07
+                </div>
+            </div>
+
+            <div class="bar">
+                <div id="hp" class="bar-fill hp"></div>
+            </div>
+
+            <div class="bar">
+                <div id="mp" class="bar-fill mp"></div>
+            </div>
+
+            <div class="skills">
+
+                <div class="skill">
+                    <span class="skill-key">J</span>
+                    <span class="skill-icon" id="icon-basic">👊</span>
+                    <span class="skill-name">普通攻擊</span>
+                </div>
+
+                <div class="skill">
+                    <span class="skill-key">U</span>
+                    <span class="skill-icon" id="icon1">🔥</span>
+                    <span class="skill-name" id="skill1">爆炎陣</span>
+                    <div class="cooldown" id="cd1"></div>
+                </div>
+
+                <div class="skill">
+                    <span class="skill-key">I</span>
+                    <span class="skill-icon" id="icon2">💨</span>
+                    <span class="skill-name" id="skill2">烈焰突進</span>
+                    <div class="cooldown" id="cd2"></div>
+                </div>
+
+                <div class="skill">
+                    <span class="skill-key">O</span>
+                    <span class="skill-icon" id="icon3">☄️</span>
+                    <span class="skill-name" id="skill3">天劫隕石</span>
+                    <div class="cooldown" id="cd3"></div>
+                </div>
+
+            </div>
         </div>
-      </div>
-
-      <div class="controls-hint">
-        🎮 <b>3D 操作說明</b><br>
-        [WASD] 3D 八向移動 | [J] 三連擊攻擊 (Combo)<br>
-        [U] 招式一 (近身範圍) | [I] 招式二 (位移突進) | [O] 招式三 (終極大招)<br>
-        [K] 防禦閃避
-      </div>
     </div>
-  </div>
 
-  <script>
-    // --- 1. Three.js 3D 基礎場景設置 ---
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a12);
-    scene.fog = new THREE.FogExp2(0x0a0a12, 0.015);
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 18, 28);
-    camera.lookAt(0, 0, 0);
+    <div class="enemy-ui">
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
+        <div class="enemy-title">
+            <span class="enemy-name">虛空獵犬</span>
+            <span class="enemy-level">ELITE</span>
+        </div>
 
-    // 光影配置
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
+        <div class="enemy-bar">
+            <div class="enemy-hp" id="enemy-hp"></div>
+        </div>
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(20, 40, 20);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    scene.add(dirLight);
+    </div>
 
-    // 3D 擂台地面 (帶有金屬質感與格線)
-    const floorGeo = new THREE.PlaneGeometry(60, 60);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1c29, roughness: 0.4, metalness: 0.6 });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
 
-    const grid = new THREE.GridHelper(60, 30, 0xff4500, 0x333344);
-    grid.position.y = 0.01;
-    scene.add(grid);
+    <div id="center-message"></div>
 
-    // --- 2. 3D 角色與動態特效構建 ---
-    class Fighter3D {
-      constructor(x, z, color, name) {
-        this.name = name;
-        this.mesh = new THREE.Group();
-        
-        // 3D 軀幹與關節構建
-        const bodyGeo = new THREE.CylinderGeometry(0.6, 0.4, 2, 8);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.5, roughness: 0.2 });
-        this.body = new THREE.Mesh(bodyGeo, bodyMat);
-        this.body.position.y = 1.5;
-        this.body.castShadow = true;
-        this.mesh.add(this.body);
 
-        // 頭部
-        const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.y = 2.8;
-        head.castShadow = true;
-        this.mesh.add(head);
+    <div class="bottom-ui">
 
-        // 拳頭 (用於連擊打擊特效)
-        const fistGeo = new THREE.SphereGeometry(0.25, 8, 8);
-        const fistMat = new THREE.MeshStandardMaterial({ color: 0xff4500 });
-        this.fistR = new THREE.Mesh(fistGeo, fistMat);
-        this.fistR.position.set(0.7, 1.5, 0.6);
-        this.mesh.add(this.fistR);
+        <div class="controls">
 
-        this.mesh.position.set(x, 0, z);
+            <b>WASD</b> 移動　
+            <b>J</b> 普攻 Combo　
+            <b>U I O</b> 技能<br>
+
+            <b>K</b> 防禦　
+            <b>SPACE</b> 閃避　
+            <b>1~4</b> 切換覺醒者
+
+        </div>
+
+        <div class="character-switch">
+
+            <button class="switch-btn active" data-char="0">
+                🔥 炎
+            </button>
+
+            <button class="switch-btn" data-char="1">
+                ❄️ 冰
+            </button>
+
+            <button class="switch-btn" data-char="2">
+                ⚡ 雷
+            </button>
+
+            <button class="switch-btn" data-char="3">
+                🌑 暗
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   基礎場景
+============================================================ */
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x070810);
+
+scene.fog = new THREE.FogExp2(
+    0x070810,
+    0.018
+);
+
+
+const camera = new THREE.PerspectiveCamera(
+    48,
+    innerWidth / innerHeight,
+    0.1,
+    500
+);
+
+camera.position.set(
+    0,
+    17,
+    25
+);
+
+
+const renderer = new THREE.WebGLRenderer({
+    antialias:true
+});
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio,2)
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+document.getElementById("game")
+    .appendChild(renderer.domElement);
+
+
+/* ============================================================
+   光照
+============================================================ */
+
+const ambient =
+    new THREE.AmbientLight(
+        0x9aa7ff,
+        .42
+    );
+
+scene.add(ambient);
+
+
+const moon =
+    new THREE.DirectionalLight(
+        0xffffff,
+        1.15
+    );
+
+moon.position.set(
+    20,
+    35,
+    10
+);
+
+moon.castShadow = true;
+
+moon.shadow.mapSize.width = 2048;
+moon.shadow.mapSize.height = 2048;
+
+scene.add(moon);
+
+
+/* ============================================================
+   地面
+============================================================ */
+
+const floorGeo =
+    new THREE.PlaneGeometry(
+        90,
+        90
+    );
+
+const floorMat =
+    new THREE.MeshStandardMaterial({
+        color:0x151925,
+        roughness:.55,
+        metalness:.5
+    });
+
+const floor =
+    new THREE.Mesh(
+        floorGeo,
+        floorMat
+    );
+
+floor.rotation.x =
+    -Math.PI / 2;
+
+floor.receiveShadow = true;
+
+scene.add(floor);
+
+
+/* 格線 */
+
+const grid =
+    new THREE.GridHelper(
+        80,
+        40,
+        0x5360a5,
+        0x24283b
+    );
+
+grid.position.y=.01;
+
+scene.add(grid);
+
+
+/* ============================================================
+   圓形戰鬥場
+============================================================ */
+
+const arenaRing =
+    new THREE.Mesh(
+        new THREE.RingGeometry(
+            17.5,
+            18,
+            64
+        ),
+
+        new THREE.MeshBasicMaterial({
+            color:0x536dff,
+            transparent:true,
+            opacity:.55,
+            side:THREE.DoubleSide
+        })
+    );
+
+arenaRing.rotation.x =
+    -Math.PI/2;
+
+arenaRing.position.y=.025;
+
+scene.add(arenaRing);
+
+
+/* ============================================================
+   工具
+============================================================ */
+
+function clamp(v,min,max){
+    return Math.max(
+        min,
+        Math.min(max,v)
+    );
+}
+
+
+function distance(a,b){
+
+    return a.position.distanceTo(
+        b.position
+    );
+
+}
+
+
+/* ============================================================
+   粒子系統
+============================================================ */
+
+const effects=[];
+
+
+function particleBurst(
+    position,
+    color,
+    amount=25,
+    power=5,
+    size=.12
+){
+
+    for(let i=0;i<amount;i++){
+
+        const geo =
+            new THREE.SphereGeometry(
+                size,
+                5,
+                5
+            );
+
+        const mat =
+            new THREE.MeshBasicMaterial({
+                color:color
+            });
+
+        const p =
+            new THREE.Mesh(
+                geo,
+                mat
+            );
+
+        p.position.copy(position);
+
+        p.velocity =
+            new THREE.Vector3(
+                (Math.random()-.5)*power,
+                Math.random()*power*.8,
+                (Math.random()-.5)*power
+            );
+
+        p.life=.55 +
+            Math.random()*.5;
+
+        scene.add(p);
+
+        effects.push(p);
+    }
+}
+
+
+/* ============================================================
+   能量環
+============================================================ */
+
+function energyRing(
+    position,
+    color,
+    maxScale=5
+){
+
+    const ring =
+        new THREE.Mesh(
+            new THREE.RingGeometry(
+                .4,
+                .55,
+                48
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color,
+                transparent:true,
+                opacity:.9,
+                side:THREE.DoubleSide
+            })
+        );
+
+    ring.rotation.x =
+        -Math.PI/2;
+
+    ring.position.copy(position);
+
+    ring.position.y=.08;
+
+    ring.scale.set(.1,.1,.1);
+
+    ring.userData={
+        life:.45,
+        maxScale
+    };
+
+    scene.add(ring);
+
+    effects.push(ring);
+}
+
+
+/* ============================================================
+   角色系統
+============================================================ */
+
+class Fighter{
+
+    constructor(config){
+
+        this.config=config;
+
+        this.name=config.name;
+
+        this.type=config.type;
+
+        this.color=config.color;
+
+        this.hp=100;
+        this.maxHp=100;
+
+        this.mp=100;
+        this.maxMp=100;
+
+        this.speed=config.speed;
+
+        this.radius=1.15;
+
+        this.combo=0;
+        this.comboTimer=0;
+
+        this.attackTimer=0;
+
+        this.invincible=0;
+
+        this.stun=0;
+
+        this.cooldowns={
+            u:0,
+            i:0,
+            o:0
+        };
+
+        this.mesh =
+            new THREE.Group();
+
         scene.add(this.mesh);
 
-        // 屬性數值
-        this.hp = 100;
-        this.mp = 100;
-        this.speed = 0.22;
-        this.comboStep = 0;
-        this.lastAttackTime = 0;
-      }
+        this.build();
 
-      // 三連擊 (Combo) 系統
-      executeCombo() {
-        const now = Date.now();
-        if (now - this.lastAttackTime > 800) this.comboStep = 0;
-
-        this.comboStep = (this.comboStep % 3) + 1;
-        this.lastAttackTime = now;
-
-        // 揮拳出擊動畫 (3D 位移)
-        this.fistR.position.z = 1.5;
-        setTimeout(() => this.fistR.position.z = 0.6, 150);
-
-        // 產生打擊波光效
-        createHitEffect(this.mesh.position, this.comboStep);
-      }
-
-      // 招式一：爆炎陣 (範圍柱狀衝爆)
-      skill1_ExplosionRing() {
-        if (this.mp < 20) return;
-        this.mp -= 20;
-
-        const ringGeo = new THREE.CylinderGeometry(4, 4, 0.5, 32, 1, true);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xff3300, wireframe: true, transparent: true, opacity: 1 });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.position.copy(this.mesh.position);
-        scene.add(ring);
-
-        // 動態擴張動畫
-        let scale = 0.1;
-        const interval = setInterval(() => {
-          scale += 0.2;
-          ring.scale.set(scale, 1, scale);
-          ring.material.opacity -= 0.05;
-          if (scale >= 2) {
-            scene.remove(ring);
-            clearInterval(interval);
-          }
-        }, 16);
-      }
-
-      // 招式二：烈焰突進 (前向閃現殘影)
-      skill2_Dash() {
-        if (this.mp < 25) return;
-        this.mp -= 25;
-
-        const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(this.mesh.quaternion);
-        this.mesh.position.add(dir.multiplyScalar(6)); // 瞬移向前
-
-        // 留下異能軌跡粒子
-        createDashTrail(this.mesh.position);
-      }
-
-      // 招式三：天劫隕石 (空間召喚 3D 物體砸下)
-      skill3_Meteor() {
-        if (this.mp < 50) return;
-        this.mp -= 50;
-
-        const meteorGeo = new THREE.DodecahedronGeometry(2, 1);
-        const meteorMat = new THREE.MeshStandardMaterial({ color: 0xff1100, emissive: 0xff3300, roughness: 0.8 });
-        const meteor = new THREE.Mesh(meteorGeo, meteorMat);
-        
-        const targetPos = this.mesh.position.clone().add(new THREE.Vector3(0, 0, 8));
-        meteor.position.set(targetPos.x, 20, targetPos.z);
-        scene.add(meteor);
-
-        // 落下動畫
-        const fall = setInterval(() => {
-          meteor.position.y -= 0.8;
-          meteor.rotation.x += 0.1;
-          if (meteor.position.y <= 1) {
-            scene.remove(meteor);
-            clearInterval(fall);
-            createHitEffect(targetPos, 3); // 巨型打擊火花
-          }
-        }, 16);
-      }
     }
 
-    // 打擊 3D 粒子系統
-    function createHitEffect(pos, step) {
-      const pCount = step * 15;
-      const pGeo = new THREE.BufferGeometry();
-      const positions = [];
-      for (let i = 0; i < pCount; i++) {
-        positions.push(
-          pos.x + (Math.random() - 0.5) * 2,
-          pos.y + 1.5 + (Math.random() - 0.5) * 2,
-          pos.z + (Math.random() - 0.5) * 2
+
+    /* ========================================================
+       建立不同角色
+    ======================================================== */
+
+    build(){
+
+        const c=this.color;
+
+        /* 身體 */
+
+        let body;
+
+        if(this.type==="fire"){
+
+            body =
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        .65,
+                        .45,
+                        1.8,
+                        8
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:c,
+                        metalness:.4,
+                        roughness:.3,
+                        emissive:0x300800
+                    })
+                );
+
+        }
+
+
+        if(this.type==="ice"){
+
+            body =
+                new THREE.Mesh(
+                    new THREE.OctahedronGeometry(
+                        1.05,
+                        1
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:c,
+                        metalness:.7,
+                        roughness:.15,
+                        emissive:0x062840
+                    })
+                );
+
+            body.scale.y=1.15;
+
+        }
+
+
+        if(this.type==="thunder"){
+
+            body =
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        .48,
+                        .72,
+                        2,
+                        6
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:c,
+                        metalness:.8,
+                        roughness:.18,
+                        emissive:0x241800
+                    })
+                );
+
+        }
+
+
+        if(this.type==="shadow"){
+
+            body =
+                new THREE.Mesh(
+                    new THREE.ConeGeometry(
+                        .85,
+                        2.3,
+                        6
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:c,
+                        roughness:.4,
+                        emissive:0x120022
+                    })
+                );
+
+        }
+
+
+        body.position.y=1.4;
+
+        body.castShadow=true;
+
+        this.mesh.add(body);
+
+        this.body=body;
+
+
+        /* 頭 */
+
+        const head =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    .53,
+                    16,
+                    16
+                ),
+
+                new THREE.MeshStandardMaterial({
+                    color:
+                        this.type==="shadow"
+                        ?0x29263d
+                        :0xffc7a8,
+                    roughness:.55
+                })
+            );
+
+        head.position.y=2.8;
+
+        head.castShadow=true;
+
+        this.mesh.add(head);
+
+        this.head=head;
+
+
+        /* 角色特色裝飾 */
+
+        this.buildAccessory();
+
+
+        /* 手 */
+
+        const armGeo =
+            new THREE.CapsuleGeometry
+            ? null
+            : new THREE.CylinderGeometry(
+                .18,
+                .2,
+                1,
+                8
+            );
+
+
+        const fistGeo =
+            new THREE.SphereGeometry(
+                .27,
+                8,
+                8
+            );
+
+
+        const fistMat =
+            new THREE.MeshStandardMaterial({
+                color:c,
+                emissive:c,
+                emissiveIntensity:.15
+            });
+
+
+        this.fistL =
+            new THREE.Mesh(
+                fistGeo,
+                fistMat
+            );
+
+        this.fistR =
+            new THREE.Mesh(
+                fistGeo,
+                fistMat
+            );
+
+        this.fistL.position.set(
+            -.78,
+            1.55,
+            .15
         );
-      }
-      pGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      const pMat = new THREE.PointsMaterial({ color: step === 3 ? 0xff0000 : 0xffaa00, size: 0.4 });
-      const pSystem = new THREE.Points(pGeo, pMat);
-      scene.add(pSystem);
 
-      setTimeout(() => scene.remove(pSystem), 300);
+        this.fistR.position.set(
+            .78,
+            1.55,
+            .15
+        );
+
+        this.mesh.add(
+            this.fistL,
+            this.fistR
+        );
+
+
+        /* 光圈 */
+
+        this.aura =
+            new THREE.PointLight(
+                c,
+                1.5,
+                5
+            );
+
+        this.aura.position.y=1.5;
+
+        this.mesh.add(
+            this.aura
+        );
+
     }
 
-    function createDashTrail(pos) {
-      const light = new THREE.PointLight(0xff4500, 3, 10);
-      light.position.copy(pos);
-      scene.add(light);
-      setTimeout(() => scene.remove(light), 400);
+
+    buildAccessory(){
+
+        if(this.type==="fire"){
+
+            const flame =
+                new THREE.Mesh(
+                    new THREE.ConeGeometry(
+                        .45,
+                        1.1,
+                        6
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0xff4b00
+                    })
+                );
+
+            flame.position.y=3.55;
+
+            flame.rotation.z=.15;
+
+            this.mesh.add(flame);
+
+            this.accessory=flame;
+        }
+
+
+        if(this.type==="ice"){
+
+            for(let i=0;i<3;i++){
+
+                const crystal =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            .25,
+                            1.2,
+                            6
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+                            color:0x5edbff,
+                            emissive:0x1677a0,
+                            emissiveIntensity:.6
+                        })
+                    );
+
+                crystal.position.set(
+                    (i-1)*.5,
+                    3,
+                    -.35
+                );
+
+                crystal.rotation.z=
+                    (i-1)*.3;
+
+                this.mesh.add(
+                    crystal
+                );
+            }
+        }
+
+
+        if(this.type==="thunder"){
+
+            const ring =
+                new THREE.Mesh(
+                    new THREE.TorusGeometry(
+                        .85,
+                        .08,
+                        8,
+                        32
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0xffdf52
+                    })
+                );
+
+            ring.rotation.x=
+                Math.PI/2;
+
+            ring.position.y=2.8;
+
+            this.mesh.add(ring);
+
+        }
+
+
+        if(this.type==="shadow"){
+
+            const cloak =
+                new THREE.Mesh(
+                    new THREE.ConeGeometry(
+                        1.15,
+                        2.2,
+                        6,
+                        1,
+                        true
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:0x11091d,
+                        transparent:true,
+                        opacity:.9,
+                        side:THREE.DoubleSide
+                    })
+                );
+
+            cloak.position.y=1.1;
+
+            this.mesh.add(
+                cloak
+            );
+
+        }
+
     }
 
-    // 初始化玩家角色
-    const player = new Fighter3D(0, 0, 0xff4500, "烈焰法爾");
 
-    // 控制邏輯
-    const keys = {};
-    window.addEventListener('keydown', e => {
-      const k = e.key.toLowerCase();
-      keys[k] = true;
+    /* ========================================================
+       普攻
+    ======================================================== */
 
-      if (k === 'j') player.executeCombo();
-      if (k === 'u') player.skill1_ExplosionRing();
-      if (k === 'i') player.skill2_Dash();
-      if (k === 'o') player.skill3_Meteor();
-    });
-    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+    attack(){
 
-    // 遊戲主循環 (Render Loop)
-    function animate() {
-      requestAnimationFrame(animate);
+        if(this.stun>0)
+            return;
 
-      // 3D 移動處理
-      let moveDir = new THREE.Vector3();
-      if (keys['w']) moveDir.z -= 1;
-      if (keys['s']) moveDir.z += 1;
-      if (keys['a']) moveDir.x -= 1;
-      if (keys['d']) moveDir.x += 1;
+        const now=performance.now();
 
-      if (moveDir.length() > 0) {
-        moveDir.normalize();
-        player.mesh.position.add(moveDir.multiplyScalar(player.speed));
-        
-        // 角色轉向移動方向
-        const angle = Math.atan2(moveDir.x, moveDir.z);
-        player.mesh.rotation.y = angle;
-      }
+        if(
+            now-this.lastAttack>
+            750
+        ){
 
-      // 鏡頭跟隨 Player
-      camera.position.x = player.mesh.position.x * 0.5;
-      camera.position.z = player.mesh.position.z * 0.5 + 28;
+            this.combo=0;
 
-      // 更新 HUD
-      document.getElementById('hp-bar').style.width = `${player.hp}%`;
-      document.getElementById('mp-bar').style.width = `${player.mp}%`;
-      if (player.mp < 100) player.mp += 0.1;
+        }
 
-      renderer.render(scene, camera);
+        this.lastAttack=now;
+
+        this.combo++;
+
+        if(this.combo>3)
+            this.combo=1;
+
+        this.attackTimer=.22;
+
+        let damage=7;
+
+        if(this.combo===3)
+            damage=12;
+
+        if(this.type==="thunder")
+            damage+=3;
+
+        hitEnemy(
+            this,
+            damage,
+            2.2,
+            this.combo===3
+        );
+
+
+        const punch =
+            this.combo===3
+            ?this.fistR
+            :this.fistL;
+
+
+        punch.position.z=.85;
+
+
+        setTimeout(()=>{
+
+            punch.position.z=.15;
+
+        },130);
+
+
+        particleBurst(
+            this.mesh.position.clone()
+                .add(
+                    new THREE.Vector3(
+                        0,
+                        1.4,
+                        .9
+                    )
+                ),
+
+            this.color,
+
+            this.combo===3?18:8,
+
+            this.combo===3?4:2.5,
+
+            .08
+        );
+
     }
 
-    animate();
 
-    // 視窗縮放適應
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+    /* ========================================================
+       技能 U
+    ======================================================== */
+
+    skillU(){
+
+        if(this.cooldowns.u>0 ||
+           this.mp<20 ||
+           this.stun>0)
+            return;
+
+        this.mp-=20;
+
+        this.cooldowns.u=
+            this.config.cd1;
+
+
+        if(this.type==="fire"){
+
+            /* 爆炎陣 */
+
+            energyRing(
+                this.mesh.position,
+                0xff3b0a,
+                6
+            );
+
+            particleBurst(
+                this.mesh.position.clone()
+                    .add(
+                        new THREE.Vector3(
+                            0,
+                            1,
+                            0
+                        )
+                    ),
+                0xff5a00,
+                40,
+                5,
+                .1
+            );
+
+            hitEnemy(
+                this,
+                20,
+                5,
+                true
+            );
+
+        }
+
+
+        if(this.type==="ice"){
+
+            /* 冰刺 */
+
+            for(let i=0;i<7;i++){
+
+                const angle=
+                    i/7*Math.PI*2;
+
+                const spike=
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            .18,
+                            2.2,
+                            5
+                        ),
+
+                        new THREE.MeshStandardMaterial({
+                            color:0x65e6ff,
+                            emissive:0x209bc4,
+                            emissiveIntensity:1
+                        })
+                    );
+
+                spike.position.copy(
+                    this.mesh.position
+                );
+
+                spike.position.y=.8;
+
+                spike.rotation.z=
+                    Math.PI/2;
+
+                spike.rotation.y=
+                    angle;
+
+                scene.add(spike);
+
+                const dir=
+                    new THREE.Vector3(
+                        Math.cos(angle),
+                        0,
+                        Math.sin(angle)
+                    );
+
+                spike.userData={
+                    velocity:
+                        dir.multiplyScalar(10),
+                    life:.7
+                };
+
+                effects.push(spike);
+
+            }
+
+            hitEnemy(
+                this,
+                18,
+                4.2,
+                true,
+                "slow"
+            );
+
+        }
+
+
+        if(this.type==="thunder"){
+
+            /* 雷電爆發 */
+
+            const bolt =
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        .12,
+                        .12,
+                        10,
+                        6
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0xffef66
+                    })
+                );
+
+            bolt.position.copy(
+                this.mesh.position
+            );
+
+            bolt.position.y=5;
+
+            bolt.rotation.z=
+                (Math.random()-.5)*.5;
+
+            scene.add(bolt);
+
+            setTimeout(()=>{
+                scene.remove(bolt);
+            },180);
+
+            hitEnemy(
+                this,
+                28,
+                4,
+                true,
+                "stun"
+            );
+
+            particleBurst(
+                this.mesh.position.clone()
+                    .add(
+                        new THREE.Vector3(
+                            0,
+                            1,
+                            0
+                        )
+                    ),
+                0xffff55,
+                35,
+                7,
+                .07
+            );
+
+        }
+
+
+        if(this.type==="shadow"){
+
+            /* 暗影斬 */
+
+            this.invincible=.45;
+
+            const old=
+                this.mesh.position.clone();
+
+
+            const target=
+                enemy.mesh.position.clone();
+
+
+            const dir=
+                target.sub(old)
+                    .normalize();
+
+
+            this.mesh.position.add(
+                dir.multiplyScalar(5)
+            );
+
+
+            createSlash(
+                this.mesh.position,
+                0xa33cff
+            );
+
+
+            hitEnemy(
+                this,
+                30,
+                2.5,
+                true
+            );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       技能 I
+    ======================================================== */
+
+    skillI(){
+
+        if(
+            this.cooldowns.i>0 ||
+            this.mp<25 ||
+            this.stun>0
+        )
+            return;
+
+        this.mp-=25;
+
+        this.cooldowns.i=
+            this.config.cd2;
+
+
+        if(this.type==="fire"){
+
+            const dir=
+                facingDirection(this);
+
+            this.mesh.position.add(
+                dir.multiplyScalar(6)
+            );
+
+            createTrail(
+                this.mesh.position,
+                0xff3b00
+            );
+
+            hitEnemy(
+                this,
+                25,
+                2.3,
+                true
+            );
+
+        }
+
+
+        if(this.type==="ice"){
+
+            /* 冰牆 */
+
+            const wall=
+                new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        5,
+                        2.8,
+                        .45
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:0x57dcff,
+                        transparent:true,
+                        opacity:.8,
+                        emissive:0x1685b0,
+                        emissiveIntensity:.5
+                    })
+                );
+
+            wall.position.copy(
+                this.mesh.position
+            );
+
+            wall.position.y=1.4;
+
+            wall.rotation.y=
+                this.mesh.rotation.y;
+
+            scene.add(wall);
+
+            wall.userData={
+                life:3
+            };
+
+            effects.push(wall);
+
+        }
+
+
+        if(this.type==="thunder"){
+
+            /* 超高速連續突刺 */
+
+            this.invincible=.7;
+
+            const target=
+                enemy.mesh.position.clone();
+
+            const start=
+                this.mesh.position.clone();
+
+
+            for(let i=0;i<5;i++){
+
+                setTimeout(()=>{
+
+                    const t=
+                        i/4;
+
+                    this.mesh.position.lerpVectors(
+                        start,
+                        target,
+                        t
+                    );
+
+                    createSlash(
+                        this.mesh.position,
+                        0xffe94f
+                    );
+
+                    hitEnemy(
+                        this,
+                        10,
+                        2,
+                        false
+                    );
+
+                },i*80);
+
+            }
+
+        }
+
+
+        if(this.type==="shadow"){
+
+            /* 影分身 */
+
+            for(let i=0;i<2;i++){
+
+                const clone=
+                    this.mesh.clone();
+
+                clone.position.copy(
+                    this.mesh.position
+                );
+
+                clone.position.x +=
+                    (i===0?-1:1)*1.5;
+
+                clone.traverse(obj=>{
+
+                    if(obj.material){
+
+                        obj.material=
+                            obj.material.clone();
+
+                        obj.material.transparent=true;
+
+                        obj.material.opacity=.45;
+
+                    }
+
+                });
+
+                scene.add(clone);
+
+                setTimeout(()=>{
+                    scene.remove(clone);
+                },900);
+
+            }
+
+            hitEnemy(
+                this,
+                24,
+                4,
+                true
+            );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       終極 O
+    ======================================================== */
+
+    skillO(){
+
+        if(
+            this.cooldowns.o>0 ||
+            this.mp<50 ||
+            this.stun>0
+        )
+            return;
+
+        this.mp-=50;
+
+        this.cooldowns.o=
+            this.config.cd3;
+
+
+        if(this.type==="fire"){
+
+            /* 天劫隕石 */
+
+            const target=
+                enemy.mesh.position.clone();
+
+            const meteor=
+                new THREE.Mesh(
+                    new THREE.DodecahedronGeometry(
+                        1.7,
+                        1
+                    ),
+
+                    new THREE.MeshStandardMaterial({
+                        color:0xff2500,
+                        emissive:0xff4000,
+                        emissiveIntensity:1
+                    })
+                );
+
+            meteor.position.set(
+                target.x,
+                18,
+                target.z
+            );
+
+            scene.add(meteor);
+
+            meteor.userData={
+                target,
+                life:2,
+                velocity:-12
+            };
+
+            effects.push(meteor);
+
+        }
+
+
+        if(this.type==="ice"){
+
+            /* 絕對零度 */
+
+            energyRing(
+                enemy.mesh.position,
+                0x66eaff,
+                8
+            );
+
+            enemy.stun=2.2;
+
+            hitEnemy(
+                this,
+                45,
+                7,
+                true,
+                "freeze"
+            );
+
+            particleBurst(
+                enemy.mesh.position.clone()
+                    .add(
+                        new THREE.Vector3(
+                            0,
+                            1,
+                            0
+                        )
+                    ),
+                0x8cefff,
+                80,
+                8,
+                .08
+            );
+
+        }
+
+
+        if(this.type==="thunder"){
+
+            /* 雷神降臨 */
+
+            for(let i=0;i<8;i++){
+
+                setTimeout(()=>{
+
+                    const pos=
+                        enemy.mesh.position.clone();
+
+                    pos.x +=
+                        (Math.random()-.5)*4;
+
+                    pos.z +=
+                        (Math.random()-.5)*4;
+
+                    lightningStrike(
+                        pos
+                    );
+
+                    damageEnemy(
+                        this,
+                        16
+                    );
+
+                },i*100);
+
+            }
+
+        }
+
+
+        if(this.type==="shadow"){
+
+            /* 虛無領域 */
+
+            const field=
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        6,
+                        6,
+                        .15,
+                        48
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0x9b2cff,
+                        transparent:true,
+                        opacity:.45
+                    })
+                );
+
+            field.position.copy(
+                enemy.mesh.position
+            );
+
+            field.position.y=.08;
+
+            scene.add(field);
+
+            field.userData={
+                life:4
+            };
+
+            effects.push(field);
+
+
+            enemy.stun=3;
+
+            hitEnemy(
+                this,
+                55,
+                6,
+                true
+            );
+
+        }
+
+    }
+
+
+    /* ========================================================
+       更新
+    ======================================================== */
+
+    update(dt){
+
+        this.invincible=
+            Math.max(
+                0,
+                this.invincible-dt
+            );
+
+        this.stun=
+            Math.max(
+                0,
+                this.stun-dt
+            );
+
+
+        this.cooldowns.u=
+            Math.max(
+                0,
+                this.cooldowns.u-dt
+            );
+
+        this.cooldowns.i=
+            Math.max(
+                0,
+                this.cooldowns.i-dt
+            );
+
+        this.cooldowns.o=
+            Math.max(
+                0,
+                this.cooldowns.o-dt
+            );
+
+
+        this.comboTimer+=dt;
+
+        if(this.comboTimer>0.8)
+            this.combo=0;
+
+
+        this.mp=
+            Math.min(
+                this.maxMp,
+                this.mp+dt*6
+            );
+
+
+        /* 輕微呼吸 */
+
+        this.body.rotation.z=
+            Math.sin(
+                performance.now()*.002
+            )*.015;
+
+    }
+
+}
+
+
+/* ============================================================
+   角色資料
+============================================================ */
+
+const configs=[
+
+{
+    name:"烈焰法爾",
+    type:"fire",
+    color:0xff4518,
+    speed:.23,
+    cd1:3,
+    cd2:4,
+    cd3:10
+},
+
+{
+    name:"冰霜凜",
+    type:"ice",
+    color:0x49dfff,
+    speed:.19,
+    cd1:3,
+    cd2:6,
+    cd3:12
+},
+
+{
+    name:"雷迅",
+    type:"thunder",
+    color:0xffd928,
+    speed:.28,
+    cd1:2.5,
+    cd2:5,
+    cd3:11
+},
+
+{
+    name:"影刃",
+    type:"shadow",
+    color:0x9b38ff,
+    speed:.25,
+    cd1:3,
+    cd2:5,
+    cd3:13
+}
+
+];
+
+
+/* ============================================================
+   建立玩家
+============================================================ */
+
+let player=
+    new Fighter(
+        configs[0]
+    );
+
+player.mesh.position.set(
+    -5,
+    0,
+    4
+);
+
+
+/* ============================================================
+   敵人
+============================================================ */
+
+const enemyConfig={
+    name:"虛空獵犬",
+    type:"shadow",
+    color:0xbd32ff,
+    speed:.13,
+    cd1:3,
+    cd2:4,
+    cd3:8
+};
+
+const enemy=
+    new Fighter(
+        enemyConfig
+    );
+
+enemy.hp=180;
+enemy.maxHp=180;
+
+enemy.mesh.scale.set(
+    1.2,
+    1.2,
+    1.2
+);
+
+enemy.mesh.position.set(
+    5,
+    0,
+    -3
+);
+
+
+/* ============================================================
+   朝向
+============================================================ */
+
+function facingDirection(f){
+
+    return new THREE.Vector3(
+        0,
+        0,
+        1
+    )
+    .applyQuaternion(
+        f.mesh.quaternion
+    )
+    .normalize();
+
+}
+
+
+/* ============================================================
+   攻擊敵人
+============================================================ */
+
+function hitEnemy(
+    attacker,
+    damage,
+    range,
+    knockback=false,
+    status=null
+){
+
+    if(
+        distance(
+            attacker.mesh,
+            enemy.mesh
+        ) > range
+    )
+        return;
+
+
+    damageEnemy(
+        attacker,
+        damage
+    );
+
+
+    if(knockback){
+
+        const dir=
+            enemy.mesh.position
+                .clone()
+                .sub(
+                    attacker.mesh.position
+                )
+                .normalize();
+
+        enemy.mesh.position.add(
+            dir.multiplyScalar(
+                .7
+            )
+        );
+
+    }
+
+
+    if(status==="slow"){
+
+        enemy.speed*=.45;
+
+        setTimeout(()=>{
+            enemy.speed=enemyConfig.speed;
+        },1200);
+
+    }
+
+
+    if(status==="stun"){
+
+        enemy.stun=.8;
+
+    }
+
+
+    if(status==="freeze"){
+
+        enemy.stun=2;
+
+    }
+
+}
+
+
+/* ============================================================
+   傷害
+============================================================ */
+
+function damageEnemy(
+    attacker,
+    amount
+){
+
+    if(enemy.hp<=0)
+        return;
+
+
+    const critical=
+        Math.random()<.12;
+
+    if(critical)
+        amount*=1.7;
+
+
+    enemy.hp=
+        clamp(
+            enemy.hp-amount,
+            0,
+            enemy.maxHp
+        );
+
+
+    showDamage(
+        enemy.mesh,
+        Math.round(amount),
+        critical
+    );
+
+
+    particleBurst(
+        enemy.mesh.position.clone()
+            .add(
+                new THREE.Vector3(
+                    0,
+                    1.5,
+                    0
+                )
+            ),
+
+        attacker.color,
+
+        critical?25:10,
+
+        critical?5:2.5,
+
+        critical?.11:.07
+    );
+
+
+    shake(
+        critical?.35:.15
+    );
+
+
+    if(enemy.hp<=0){
+
+        enemyDefeated();
+
+    }
+
+}
+
+
+/* ============================================================
+   敵人死亡
+============================================================ */
+
+function enemyDefeated(){
+
+    enemy.stun=999;
+
+    centerMessage(
+        "MISSION COMPLETE",
+        "#ffffff"
+    );
+
+    particleBurst(
+        enemy.mesh.position.clone()
+            .add(
+                new THREE.Vector3(
+                    0,
+                    1,
+                    0
+                )
+            ),
+        0xd94cff,
+        130,
+        10,
+        .11
+    );
+
+    enemy.mesh.rotation.x=
+        Math.PI/2;
+
+}
+
+
+/* ============================================================
+   顯示傷害
+============================================================ */
+
+function showDamage(
+    target,
+    amount,
+    critical=false
+){
+
+    const vector=
+        target.position.clone();
+
+    vector.y+=2.5;
+
+    vector.project(camera);
+
+    const x=
+        (vector.x*.5+.5)*
+        innerWidth;
+
+    const y=
+        (-vector.y*.5+.5)*
+        innerHeight;
+
+
+    const el=
+        document.createElement(
+            "div"
+        );
+
+    el.className=
+        "damage-number";
+
+    el.innerText=
+        critical
+        ?"CRIT "+amount
+        :amount;
+
+
+    el.style.left=x+"px";
+    el.style.top=y+"px";
+
+    el.style.color=
+        critical
+        ?" #fff36b"
+        :"#ffffff";
+
+
+    document.getElementById("game")
+        .appendChild(el);
+
+
+    setTimeout(()=>{
+        el.remove();
+    },650);
+
+}
+
+
+/* ============================================================
+   Slash
+============================================================ */
+
+function createSlash(
+    pos,
+    color
+){
+
+    const slash=
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                1.2,
+                .09,
+                6,
+                24,
+                Math.PI
+            ),
+
+            new THREE.MeshBasicMaterial({
+                color,
+                transparent:true,
+                opacity:1
+            })
+        );
+
+    slash.position.copy(pos);
+
+    slash.position.y=1.4;
+
+    slash.rotation.x=
+        Math.PI/2;
+
+    slash.userData={
+        life:.35
+    };
+
+    scene.add(slash);
+
+    effects.push(slash);
+
+}
+
+
+/* ============================================================
+   Dash Trail
+============================================================ */
+
+function createTrail(
+    pos,
+    color
+){
+
+    for(let i=0;i<5;i++){
+
+        const orb=
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    .18,
+                    6,
+                    6
+                ),
+
+                new THREE.MeshBasicMaterial({
+                    color,
+                    transparent:true,
+                    opacity:.7
+                })
+            );
+
+        orb.position.copy(pos);
+
+        orb.position.x +=
+            (Math.random()-.5)*1.2;
+
+        orb.position.y +=
+            Math.random()*.8;
+
+        scene.add(orb);
+
+        orb.userData={
+            life:.5
+        };
+
+        effects.push(orb);
+
+    }
+
+}
+
+
+/* ============================================================
+   Lightning
+============================================================ */
+
+function lightningStrike(
+    pos
+){
+
+    const geo=
+        new THREE.CylinderGeometry(
+            .16,
+            .16,
+            16,
+            5
+        );
+
+    const mat=
+        new THREE.MeshBasicMaterial({
+            color:0xffee70
+        });
+
+    const bolt=
+        new THREE.Mesh(
+            geo,
+            mat
+        );
+
+    bolt.position.copy(pos);
+
+    bolt.position.y=8;
+
+    scene.add(bolt);
+
+    particleBurst(
+        pos,
+        0xffff66,
+        35,
+        6,
+        .06
+    );
+
+    setTimeout(()=>{
+        scene.remove(bolt);
+    },150);
+
+}
+
+
+/* ============================================================
+   Camera Shake
+============================================================ */
+
+let shakePower=0;
+
+function shake(power){
+
+    shakePower=
+        Math.max(
+            shakePower,
+            power
+        );
+
+}
+
+
+/* ============================================================
+   Center Message
+============================================================ */
+
+function centerMessage(
+    text,
+    color
+){
+
+    const el=
+        document.getElementById(
+            "center-message"
+        );
+
+    el.innerText=text;
+
+    el.style.color=color;
+
+    el.style.animation="none";
+
+    void el.offsetWidth;
+
+    el.style.animation=
+        "centerPop .9s ease-out";
+
+}
+
+
+/* ============================================================
+   玩家受傷
+============================================================ */
+
+function damagePlayer(
+    amount
+){
+
+    if(player.invincible>0)
+        return;
+
+
+    if(defending){
+
+        amount*=.3;
+
+        particleBurst(
+            player.mesh.position.clone()
+                .add(
+                    new THREE.Vector3(
+                        0,
+                        1,
+                        0
+                    )
+                ),
+
+            0x9fdcff,
+            18,
+            3,
+            .07
+        );
+
+    }
+
+
+    player.hp=
+        clamp(
+            player.hp-amount,
+            0,
+            player.maxHp
+        );
+
+
+    showDamage(
+        player.mesh,
+        Math.round(amount)
+    );
+
+
+    shake(.22);
+
+
+    if(player.hp<=0){
+
+        player.hp=100;
+
+        player.mesh.position.set(
+            -5,
+            0,
+            4
+        );
+
+        centerMessage(
+            "RESPAWN",
+            "#ffffff"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   敵人 AI
+============================================================ */
+
+let enemyAttackTimer=0;
+
+function enemyAI(dt){
+
+    if(enemy.hp<=0)
+        return;
+
+
+    if(enemy.stun>0)
+        return;
+
+
+    enemyAttackTimer-=dt;
+
+
+    const dir=
+        player.mesh.position
+            .clone()
+            .sub(
+                enemy.mesh.position
+            );
+
+
+    const dist=
+        dir.length();
+
+
+    if(dist>2.5){
+
+        dir.normalize();
+
+        enemy.mesh.position.add(
+            dir.multiplyScalar(
+                enemy.speed
+            )
+        );
+
+        enemy.mesh.rotation.y=
+            Math.atan2(
+                dir.x,
+                dir.z
+            );
+
+    }
+    else{
+
+        if(enemyAttackTimer<=0){
+
+            enemyAttackTimer=.8;
+
+            damagePlayer(
+                7+
+                Math.random()*5
+            );
+
+            particleBurst(
+                player.mesh.position.clone()
+                    .add(
+                        new THREE.Vector3(
+                            0,
+                            1.3,
+                            0
+                        )
+                    ),
+
+                0xbd32ff,
+                12,
+                3,
+                .08
+            );
+
+        }
+
+    }
+
+
+    /* 偶爾使用技能 */
+
+    if(
+        dist<6 &&
+        Math.random()<.003
+    ){
+
+        enemySkill();
+
+    }
+
+}
+
+
+/* ============================================================
+   敵人技能
+============================================================ */
+
+function enemySkill(){
+
+    const pos=
+        player.mesh.position.clone();
+
+
+    energyRing(
+        pos,
+        0xbd32ff,
+        5
+    );
+
+
+    damagePlayer(
+        15
+    );
+
+}
+
+
+/* ============================================================
+   移動
+============================================================ */
+
+const keys={};
+
+let defending=false;
+
+window.addEventListener(
+    "keydown",
+    e=>{
+
+        const key=
+            e.key.toLowerCase();
+
+        keys[key]=true;
+
+
+        if(key==="j")
+            player.attack();
+
+        if(key==="u")
+            player.skillU();
+
+        if(key==="i")
+            player.skillI();
+
+        if(key==="o")
+            player.skillO();
+
+        if(key==="k")
+            defending=true;
+
+        if(key===" "){
+
+            player.invincible=.35;
+
+            const dir=
+                movementDirection();
+
+            player.mesh.position.add(
+                dir.multiplyScalar(3)
+            );
+
+            createTrail(
+                player.mesh.position,
+                player.color
+            );
+
+        }
+
+
+        /* 角色切換 */
+
+        if(
+            ["1","2","3","4"]
+            .includes(key)
+        ){
+
+            switchCharacter(
+                Number(key)-1
+            );
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "keyup",
+    e=>{
+
+        keys[
+            e.key.toLowerCase()
+        ]=false;
+
+        if(
+            e.key.toLowerCase()==="k"
+        ){
+
+            defending=false;
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   移動方向
+============================================================ */
+
+function movementDirection(){
+
+    const dir=
+        new THREE.Vector3();
+
+
+    if(keys.w)
+        dir.z-=1;
+
+    if(keys.s)
+        dir.z+=1;
+
+    if(keys.a)
+        dir.x-=1;
+
+    if(keys.d)
+        dir.x+=1;
+
+
+    if(dir.length()>0)
+        dir.normalize();
+
+
+    return dir;
+
+}
+
+
+/* ============================================================
+   玩家移動
+============================================================ */
+
+function updatePlayerMovement(){
+
+    if(
+        player.stun>0 ||
+        defending
+    )
+        return;
+
+
+    const dir=
+        movementDirection();
+
+
+    if(dir.length()>0){
+
+        player.mesh.position.add(
+            dir.multiplyScalar(
+                player.speed
+            )
+        );
+
+
+        player.mesh.rotation.y=
+            Math.atan2(
+                dir.x,
+                dir.z
+            );
+
+    }
+
+
+    /* 戰鬥區域限制 */
+
+    const p=
+        player.mesh.position;
+
+    const len=
+        Math.sqrt(
+            p.x*p.x+
+            p.z*p.z
+        );
+
+
+    if(len>16){
+
+        p.x=
+            p.x/len*16;
+
+        p.z=
+            p.z/len*16;
+
+    }
+
+}
+
+
+/* ============================================================
+   角色切換
+============================================================ */
+
+function switchCharacter(
+    index
+){
+
+    if(index<0 ||
+       index>=configs.length)
+        return;
+
+
+    const oldPosition=
+        player.mesh.position.clone();
+
+
+    scene.remove(
+        player.mesh
+    );
+
+
+    player=
+        new Fighter(
+            configs[index]
+        );
+
+
+    player.mesh.position.copy(
+        oldPosition
+    );
+
+
+    document.getElementById(
+        "player-name"
+    ).innerText=
+        player.name;
+
+
+    document.getElementById(
+        "player-type"
+    ).innerText=
+        getTypeName(
+            player.type
+        );
+
+
+    updateSkillUI();
+
+
+    document.querySelectorAll(
+        ".switch-btn"
+    ).forEach(
+        (btn,i)=>{
+            btn.classList.toggle(
+                "active",
+                i===index
+            );
+        }
+    );
+
+
+    centerMessage(
+        player.name,
+        "#" +
+        new THREE.Color(
+            player.color
+        ).getHexString()
+    );
+
+}
+
+
+function getTypeName(type){
+
+    const map={
+        fire:"覺醒者・炎",
+        ice:"覺醒者・冰",
+        thunder:"覺醒者・雷",
+        shadow:"覺醒者・暗"
+    };
+
+    return map[type];
+
+}
+
+
+/* ============================================================
+   技能 UI
+============================================================ */
+
+function updateSkillUI(){
+
+    const c=
+        player.type;
+
+
+    const data={
+
+        fire:{
+            icon:["🔥","💨","☄️"],
+            names:[
+                "爆炎陣",
+                "烈焰突進",
+                "天劫隕石"
+            ]
+        },
+
+        ice:{
+            icon:["❄️","🧊","🌨️"],
+            names:[
+                "冰刺爆發",
+                "寒冰之牆",
+                "絕對零度"
+            ]
+        },
+
+        thunder:{
+            icon:["⚡","⚡","🌩️"],
+            names:[
+                "雷爆",
+                "閃電連斬",
+                "雷神降臨"
+            ]
+        },
+
+        shadow:{
+            icon:["🌑","👥","🕳️"],
+            names:[
+                "暗影斬",
+                "影分身",
+                "虛無領域"
+            ]
+        }
+
+    };
+
+
+    document.getElementById(
+        "icon1"
+    ).innerText=
+        data[c].icon[0];
+
+    document.getElementById(
+        "icon2"
+    ).innerText=
+        data[c].icon[1];
+
+    document.getElementById(
+        "icon3"
+    ).innerText=
+        data[c].icon[2];
+
+
+    document.getElementById(
+        "skill1"
+    ).innerText=
+        data[c].names[0];
+
+    document.getElementById(
+        "skill2"
+    ).innerText=
+        data[c].names[1];
+
+    document.getElementById(
+        "skill3"
+    ).innerText=
+        data[c].names[2];
+
+}
+
+
+/* ============================================================
+   UI 更新
+============================================================ */
+
+function updateHUD(){
+
+    document.getElementById(
+        "hp"
+    ).style.width=
+        player.hp+"%";
+
+
+    document.getElementById(
+        "mp"
+    ).style.width=
+        player.mp+"%";
+
+
+    document.getElementById(
+        "enemy-hp"
+    ).style.width=
+        (
+            enemy.hp/
+            enemy.maxHp*
+            100
+        )+"%";
+
+
+    updateCooldown(
+        "cd1",
+        player.cooldowns.u
+    );
+
+    updateCooldown(
+        "cd2",
+        player.cooldowns.i
+    );
+
+    updateCooldown(
+        "cd3",
+        player.cooldowns.o
+    );
+
+}
+
+
+function updateCooldown(
+    id,
+    time
+){
+
+    const el=
+        document.getElementById(id);
+
+
+    if(time>0){
+
+        el.style.display="flex";
+
+        el.innerText=
+            time.toFixed(1);
+
+    }
+    else{
+
+        el.style.display="none";
+
+    }
+
+}
+
+
+/* ============================================================
+   特效更新
+============================================================ */
+
+function updateEffects(dt){
+
+    for(
+        let i=effects.length-1;
+        i>=0;
+        i--
+    ){
+
+        const e=effects[i];
+
+        if(!e.userData)
+            continue;
+
+
+        e.userData.life-=dt;
+
+
+        /* 普通粒子 */
+
+        if(e.velocity){
+
+            e.position.add(
+                e.velocity.clone()
+                    .multiplyScalar(dt)
+            );
+
+            e.velocity.y-=10*dt;
+
+        }
+
+
+        /* 能量環 */
+
+        if(
+            e.geometry &&
+            e.geometry.type==="RingGeometry"
+        ){
+
+            e.scale.x +=
+                dt*8;
+
+            e.scale.y +=
+                dt*8;
+
+            if(
+                e.material.opacity
+            ){
+
+                e.material.opacity=
+                    Math.max(
+                        0,
+                        e.userData.life*2
+                    );
+
+            }
+
+        }
+
+
+        /* 流星 */
+
+        if(
+            e.geometry &&
+            e.geometry.type==="DodecahedronGeometry"
+        ){
+
+            e.position.y +=
+                e.userData.velocity*dt;
+
+            e.rotation.x+=dt*4;
+            e.rotation.z+=dt*3;
+
+
+            if(
+                e.position.y<=1
+            ){
+
+                particleBurst(
+                    e.position,
+                    0xff4a00,
+                    100,
+                    9,
+                    .12
+                );
+
+                energyRing(
+                    e.position,
+                    0xff4a00,
+                    8
+                );
+
+                damageEnemy(
+                    player,
+                    55
+                );
+
+                e.userData.life=0;
+
+            }
+
+        }
+
+
+        if(
+            e.material &&
+            e.material.transparent
+        ){
+
+            e.material.opacity=
+                Math.max(
+                    0,
+                    e.userData.life
+                );
+
+        }
+
+
+        if(
+            e.userData.life<=0
+        ){
+
+            scene.remove(e);
+
+            effects.splice(i,1);
+
+        }
+
+    }
+
+}
+
+
+/* ============================================================
+   鏡頭
+============================================================ */
+
+function updateCamera(){
+
+    const target=
+        player.mesh.position.clone();
+
+
+    target.y=0;
+
+
+    const desired=
+        new THREE.Vector3(
+            target.x*.42,
+            16,
+            target.z*.42+25
+        );
+
+
+    camera.position.lerp(
+        desired,
+        .07
+    );
+
+
+    camera.lookAt(
+        target.x,
+        0,
+        target.z
+    );
+
+
+    if(shakePower>0){
+
+        camera.position.x +=
+            (Math.random()-.5)*
+            shakePower;
+
+        camera.position.y +=
+            (Math.random()-.5)*
+            shakePower;
+
+        shakePower*=.85;
+
+    }
+
+}
+
+
+/* ============================================================
+   遊戲循環
+============================================================ */
+
+let lastTime=
+    performance.now();
+
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const now=
+        performance.now();
+
+
+    let dt=
+        (now-lastTime)/1000;
+
+
+    dt=
+        Math.min(dt,.05);
+
+
+    lastTime=now;
+
+
+    player.update(dt);
+
+    enemy.update(dt);
+
+    updatePlayerMovement();
+
+    enemyAI(dt);
+
+    updateEffects(dt);
+
+    updateCamera();
+
+    updateHUD();
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+animate();
+
+
+/* ============================================================
+   角色按鈕
+============================================================ */
+
+document.querySelectorAll(
+    ".switch-btn"
+).forEach(
+    (btn)=>{
+        btn.addEventListener(
+            "click",
+            ()=>{
+                switchCharacter(
+                    Number(
+                        btn.dataset.char
+                    )
+                );
+            }
+        );
+    }
+);
+
+
+/* ============================================================
+   Resize
+============================================================ */
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect=
+            innerWidth/
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+
+    }
+);
+
+
+/* ============================================================
+   初始 UI
+============================================================ */
+
+updateSkillUI();
+
+</script>
+
 </body>
 </html>

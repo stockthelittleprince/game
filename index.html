@@ -2,72 +2,242 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>街頭異能大亂鬥</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>街頭異能大亂鬥 - LF2 風格選角版</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #121212; color: #fff; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; }
-    #game-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: #1a1a1a; }
-    canvas { background: #2b2b2b; border: 3px solid #444; }
-    #debug-panel { width: 320px; background: #1f1f24; border-left: 2px solid #333; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    #debug-panel h2 { font-size: 16px; color: #ff5722; border-bottom: 2px solid #ff5722; padding-bottom: 5px; }
-    .control-group { display: flex; flex-direction: column; gap: 4px; background: #2a2a32; padding: 8px; border-radius: 4px; }
-    .control-group label { font-size: 12px; color: #ddd; display: flex; justify-content: space-between; }
-    .hud { position: absolute; top: 15px; left: 15px; font-size: 14px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 6px; border: 1px solid #555; pointer-events: none; }
+    body {
+      background: #0d0d11;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #game-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #181820;
+    }
+    canvas {
+      background: #252830;
+      border: 3px solid #444;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+    
+    /* UI Overlay: 選角頁面與結束畫面 */
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 10, 15, 0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .hidden { display: none !important; }
+    
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+      max-width: 750px;
+    }
+    .char-card {
+      background: #20222e;
+      border: 2px solid #3b3e54;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .char-card:hover {
+      border-color: #ff9800;
+      transform: translateY(-4px);
+      background: #2a2d3d;
+    }
+    .char-card.selected {
+      border-color: #00e676;
+      background: #1c382b;
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
+    }
+    .char-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      margin: 0 auto 8px auto;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 20px; font-weight: bold;
+    }
+    .btn {
+      background: #ff5722;
+      color: white; border: none;
+      padding: 10px 24px; font-size: 16px;
+      border-radius: 6px; cursor: pointer;
+      font-weight: bold; transition: 0.2s;
+    }
+    .btn:hover { background: #f4511e; transform: scale(1.05); }
+
+    /* 即時數據調校面板 */
+    #debug-panel {
+      width: 320px;
+      background: #16171e;
+      border-left: 2px solid #2d2f3e;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #debug-panel h2 { font-size: 16px; color: #ff9800; border-bottom: 1px solid #333; padding-bottom: 5px; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 4px;
+      background: #20222e; padding: 8px; border-radius: 4px;
+    }
+    .control-group label { font-size: 12px; color: #ccc; display: flex; justify-content: space-between; }
+    
+    .hud {
+      position: absolute; top: 15px; left: 15px;
+      font-size: 14px; background: rgba(0,0,0,0.75);
+      padding: 10px 15px; border-radius: 8px; border: 1px solid #444;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
+
   <div id="game-container">
-    <div class="hud">
-      <div>HP: <span id="hp-val">100</span> | EN: <span id="en-val">100</span> | 擊殺: <span id="kills-val">0</span></div>
-      <div style="color: #ff9800; font-size: 12px; margin-top: 4px;">🔥 [WASD]移動 | [J]噴火 | [K]火拳 | [L]加速</div>
+    <!-- 1. 選角選單 UI -->
+    <div id="char-select-overlay" class="overlay">
+      <h1 style="color: #ff9800; font-size: 28px;">🔥 選擇你的異能格鬥家</h1>
+      <p style="color: #aaa; margin-top: 5px;">選擇一位異能者進入街頭戰鬥</p>
+      
+      <div class="char-grid" id="char-grid"></div>
+
+      <button class="btn" id="start-btn">進入戰鬥</button>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- 2. Game Over UI -->
+    <div id="gameover-overlay" class="overlay hidden">
+      <h1 style="color: #f44336; font-size: 32px;">你倒在了街頭對決中！</h1>
+      <p id="final-stats" style="color: #ccc; margin: 15px 0; font-size: 18px;"></p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" id="restart-btn">重新開始</button>
+        <button class="btn" id="reselect-btn" style="background: #3f51b5;">重新選角</button>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div>角色: <span id="char-name-val" style="color:#ff9800; font-weight:bold;">-</span></div>
+      <div>HP: <span id="hp-val">100</span> | EN: <span id="en-val">100</span> | 擊殺: <span id="kills-val">0</span></div>
+      <div style="color: #4fc3f7; font-size: 12px; margin-top: 4px;">🎮 [WASD]移動 | [J]招式1 | [K]招式2 | [L]位移技能</div>
+    </div>
+    
+    <canvas id="gameCanvas" width="850" height="600"></canvas>
   </div>
 
+  <!-- 右側即時數據控制台 -->
   <div id="debug-panel">
-    <h2>🔥 異能數據調校</h2>
+    <h2>🎮 即時數據調校面板</h2>
     <div class="control-group">
-      <label>噴火傷害: <span id="v-fireDamage">0.8</span></label>
-      <input type="range" id="p-fireDamage" min="0.2" max="5" step="0.1" value="0.8">
+      <label>玩家基礎速度: <span id="v-playerSpeed"></span></label>
+      <input type="range" id="p-playerSpeed" min="2" max="10" step="0.5" value="4">
     </div>
     <div class="control-group">
-      <label>火拳傷害: <span id="v-punchDamage">45</span></label>
-      <input type="range" id="p-punchDamage" min="10" max="150" step="5" value="45">
+      <label>技能 1 (J) 傷害倍率: <span id="v-skill1Mult"></span></label>
+      <input type="range" id="p-skill1Mult" min="0.5" max="5" step="0.1" value="1">
     </div>
     <div class="control-group">
-      <label>移動速度: <span id="v-playerSpeed">4.5</span></label>
-      <input type="range" id="p-playerSpeed" min="2" max="12" step="0.5" value="4.5">
+      <label>技能 2 (K) 傷害倍率: <span id="v-skill2Mult"></span></label>
+      <input type="range" id="p-skill2Mult" min="0.5" max="5" step="0.1" value="1">
     </div>
     <div class="control-group">
-      <label>怪物生成間隔 (ms): <span id="v-spawnInterval">1500</span></label>
+      <label>能量回復速度: <span id="v-energyRegen"></span></label>
+      <input type="range" id="p-energyRegen" min="0.1" max="2" step="0.1" value="0.4">
+    </div>
+    <div class="control-group">
+      <label>敵人生成頻率 (ms): <span id="v-spawnInterval"></span></label>
       <input type="range" id="p-spawnInterval" min="300" max="3000" step="100" value="1500">
+    </div>
+    <div class="control-group">
+      <label>敵人血量: <span id="v-enemyHp"></span></label>
+      <input type="range" id="p-enemyHp" min="20" max="300" step="10" value="50">
     </div>
   </div>
 
   <script>
+    // 10 位異能角色數據設定
+    const CHARACTERS = [
+      { id: 'falco', name: '烈焰法爾', elem: '🔥', color: '#ff4500', hp: 100, en: 100, spd: 4.2, desc: '近戰流爆發，火焰連拳與打擊' },
+      { id: 'iceberg', name: '霜寒艾斯', elem: '❄️', color: '#00bfff', hp: 110, en: 100, spd: 3.8, desc: '控制系，凍結敵人與冰刺突擊' },
+      { id: 'volt', name: '疾雷伏特', elem: '⚡', color: '#ffd700', hp: 90, en: 120, spd: 5.0, desc: '高敏捷，連鎖閃電與光速衝鋒' },
+      { id: 'gale', name: '狂風特洛', elem: '🍃', color: '#00e676', hp: 95, en: 100, spd: 4.8, desc: '風刃射擊與區域護盾' },
+      { id: 'golem', name: '磐石高爾', elem: '🪨', color: '#8d6e63', hp: 160, en: 80, spd: 3.0, desc: '超高血量坦克，地裂粉碎' },
+      { id: 'lux', name: '聖光路克', elem: '☀️', color: '#fff59d', hp: 105, en: 110, spd: 4.0, desc: '帶有自我治療與聖光洗禮' },
+      { id: 'shadow', name: '暗影柴克', elem: '🌑', color: '#9c27b0', hp: 85, en: 130, spd: 5.2, desc: '高傷刺客，暗影分身打擊' },
+      { id: 'venom', name: '毒蛛曼巴', elem: '毒', color: '#76ff03', hp: 100, en: 100, spd: 4.0, desc: '持續毒素傷害與減速' },
+      { id: 'magneto', name: '磁力麥格', elem: '🧲', color: '#e91e63', hp: 115, en: 90, spd: 3.6, desc: '磁力拉拽敵人與排斥衝擊' },
+      { id: 'chronos', name: '時空克洛', elem: '⏱️', color: '#00bcd4', hp: 90, en: 140, spd: 4.5, desc: '時空減速與閃現突襲' }
+    ];
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const config = { fireDamage: 0.8, punchDamage: 45, playerSpeed: 4.5, spawnInterval: 1500 };
 
-    Object.keys(config).forEach(key => {
-      const input = document.getElementById(`p-${key}`);
-      const valSpan = document.getElementById(`v-${key}`);
-      if(input && valSpan) {
-        input.addEventListener('input', (e) => {
-          config[key] = parseFloat(e.target.value);
+    const config = { playerSpeed: 4, skill1Mult: 1, skill2Mult: 1, energyRegen: 0.4, spawnInterval: 1500, enemyHp: 50 };
+
+    function setupControls() {
+      Object.keys(config).forEach(key => {
+        const input = document.getElementById(`p-${key}`);
+        const valSpan = document.getElementById(`v-${key}`);
+        if(input && valSpan) {
           valSpan.textContent = config[key];
-        });
-      }
-    });
+          input.addEventListener('input', (e) => {
+            config[key] = parseFloat(e.target.value);
+            valSpan.textContent = config[key];
+          });
+        }
+      });
+    }
 
-    const keys = {};
-    let mousePos = { x: 0, y: 0 };
-    let kills = 0;
-    let lastSpawnTime = 0;
+    let selectedCharIndex = 0;
+    let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+    let keys = {}, mousePos = { x: 0, y: 0 };
+    let kills = 0, lastSpawnTime = 0, lastSkill1Time = 0, lastSkill2Time = 0;
 
-    const player = { x: 400, y: 300, radius: 16, hp: 100, energy: 100, angle: 0 };
+    let player = { x: 425, y: 300, radius: 18, hp: 100, maxHp: 100, energy: 100, maxEnergy: 100, angle: 0, isFacingLeft: false };
     let enemies = [];
     let particles = [];
+
+    // 初始化選角 UI
+    const charGrid = document.getElementById('char-grid');
+    CHARACTERS.forEach((c, idx) => {
+      const card = document.createElement('div');
+      card.className = `char-card ${idx === 0 ? 'selected' : ''}`;
+      card.innerHTML = `
+        <div class="char-avatar" style="background:${c.color}; color:#111;">${c.elem}</div>
+        <div style="font-weight:bold; font-size:14px;">${c.name}</div>
+        <div style="font-size:11px; color:#aaa; margin-top:4px;">${c.desc}</div>
+      `;
+      card.onclick = () => {
+        document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedCharIndex = idx;
+      };
+      charGrid.appendChild(card);
+    });
+
+    document.getElementById('start-btn').onclick = startGame;
+    document.getElementById('restart-btn').onclick = startGame;
+    document.getElementById('reselect-btn').onclick = () => {
+      document.getElementById('gameover-overlay').classList.add('hidden');
+      document.getElementById('char-select-overlay').classList.remove('hidden');
+      gameState = 'MENU';
+    };
 
     window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
     window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
@@ -77,56 +247,173 @@
       mousePos.y = e.clientY - rect.top;
     });
 
+    function startGame() {
+      const charData = CHARACTERS[selectedCharIndex];
+      player.hp = player.maxHp = charData.hp;
+      player.energy = player.maxEnergy = charData.en;
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      config.playerSpeed = charData.spd;
+      document.getElementById('p-playerSpeed').value = charData.spd;
+      document.getElementById('v-playerSpeed').textContent = charData.spd;
+      
+      document.getElementById('char-name-val').textContent = charData.name;
+      
+      enemies = [];
+      particles = [];
+      kills = 0;
+      gameState = 'PLAYING';
+
+      document.getElementById('char-select-overlay').classList.add('hidden');
+      document.getElementById('gameover-overlay').classList.add('hidden');
+    }
+
+    // 繪製 LF2 風格人形角色
+    function drawHumanoid(x, y, radius, color, isFacingLeft, isEnemy = false) {
+      ctx.save();
+      ctx.translate(x, y);
+      if (isFacingLeft) ctx.scale(-1, 1);
+
+      // 影子
+      ctx.beginPath();
+      ctx.ellipse(0, radius, radius * 0.8, radius * 0.3, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fill();
+
+      // 雙腿
+      ctx.fillStyle = '#222';
+      ctx.fillRect(-6, 2, 4, 12);
+      ctx.fillRect(2, 2, 4, 12);
+
+      // 身體/外衣
+      ctx.fillStyle = color;
+      ctx.fillRect(-8, -10, 16, 14);
+
+      // 頭部
+      ctx.beginPath();
+      ctx.arc(0, -16, 8, 0, Math.PI * 2);
+      ctx.fillStyle = isEnemy ? '#ff5252' : '#ffcc80'; // 敵人紅面，玩家膚色
+      ctx.fill();
+
+      // 頭髮/特色標誌
+      ctx.fillStyle = isEnemy ? '#b71c1c' : color;
+      ctx.fillRect(-8, -24, 16, 6);
+
+      // 雙手 (戰鬥姿態)
+      ctx.fillStyle = color;
+      ctx.fillRect(4, -8, 6, 6);
+
+      ctx.restore();
+    }
+
     function update(timestamp) {
-      player.angle = Math.atan2(mousePos.y - player.y, mousePos.x - player.x);
+      if (gameState !== 'PLAYING') return;
 
-      let speed = config.playerSpeed;
-      if (keys['l'] && player.energy >= 1) { speed *= 2; player.energy -= 0.5; }
+      const charData = CHARACTERS[selectedCharIndex];
+      player.isFacingLeft = mousePos.x < player.x;
 
-      if ((keys['w'] || keys['arrowup']) && player.y > player.radius) player.y -= speed;
-      if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - player.radius) player.y += speed;
-      if ((keys['a'] || keys['arrowleft']) && player.x > player.radius) player.x -= speed;
-      if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - player.radius) player.x += speed;
-
-      if (player.energy < 100) player.energy = Math.min(100, player.energy + 0.3);
-
-      if (keys['j'] && player.energy >= 0.5) {
-        player.energy -= 0.5;
-        const pAngle = player.angle + (Math.random() - 0.5) * 0.4;
-        particles.push({
-          x: player.x, y: player.y,
-          vx: Math.cos(pAngle) * 8, vy: Math.sin(pAngle) * 8,
-          life: 15, maxLife: 15
-        });
-
-        enemies.forEach(e => {
-          if (Math.hypot(e.x - player.x, e.y - player.y) < 130) e.hp -= config.fireDamage;
-        });
+      // 移動
+      let spd = config.playerSpeed;
+      if (keys['l'] && player.energy >= 15) {
+        spd *= 2.2;
+        player.energy -= 1.5;
+        // 留影粒子
+        particles.push({ x: player.x, y: player.y, color: charData.color, radius: 10, life: 10, maxLife: 10 });
       }
 
+      if ((keys['w'] || keys['arrowup']) && player.y > player.radius + 20) player.y -= spd;
+      if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - player.radius) player.y += spd;
+      if ((keys['a'] || keys['arrowleft']) && player.x > player.radius) player.x -= spd;
+      if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - player.radius) player.x += spd;
+
+      // 能量回復
+      if (player.energy < player.maxEnergy) player.energy = Math.min(player.maxEnergy, player.energy + config.energyRegen);
+
+      // 技能 1 [J]
+      if (keys['j'] && player.energy >= 5 && timestamp - lastSkill1Time > 200) {
+        player.energy -= 5;
+        lastSkill1Time = timestamp;
+        
+        const angle = Math.atan2(mousePos.y - player.y, mousePos.x - player.x);
+        for(let i=0; i<3; i++) {
+          particles.push({
+            x: player.x, y: player.y - 10,
+            vx: Math.cos(angle + (Math.random()-0.5)*0.3) * 7,
+            vy: Math.sin(angle + (Math.random()-0.5)*0.3) * 7,
+            color: charData.color, radius: Math.random()*8 + 4, life: 20, maxLife: 20,
+            isAttack: true, damage: 12 * config.skill1Mult
+          });
+        }
+      }
+
+      // 技能 2 [K] (大招衝擊)
+      if (keys['k'] && player.energy >= 30 && timestamp - lastSkill2Time > 800) {
+        player.energy -= 30;
+        lastSkill2Time = timestamp;
+
+        for(let i=0; i<16; i++) {
+          const a = (Math.PI * 2 / 16) * i;
+          particles.push({
+            x: player.x, y: player.y,
+            vx: Math.cos(a) * 9, vy: Math.sin(a) * 9,
+            color: charData.color, radius: 10, life: 25, maxLife: 25,
+            isAttack: true, damage: 35 * config.skill2Mult
+          });
+        }
+      }
+
+      // 生成敵人 (街頭混混)
       if (timestamp - lastSpawnTime > config.spawnInterval) {
         enemies.push({
           x: Math.random() < 0.5 ? 0 : canvas.width,
-          y: Math.random() * canvas.height,
-          hp: 50, maxHp: 50, radius: 14
+          y: Math.random() * (canvas.height - 100) + 50,
+          hp: config.enemyHp, maxHp: config.enemyHp,
+          speed: 1.8 + Math.random() * 0.8,
+          radius: 16
         });
         lastSpawnTime = timestamp;
       }
 
+      // 敵人邏輯
       for (let i = enemies.length - 1; i >= 0; i--) {
         const e = enemies[i];
         const ang = Math.atan2(player.y - e.y, player.x - e.x);
-        e.x += Math.cos(ang) * 2;
-        e.y += Math.sin(ang) * 2;
+        e.x += Math.cos(ang) * e.speed;
+        e.y += Math.sin(ang) * e.speed;
 
-        if (Math.hypot(player.x - e.x, player.y - e.y) < player.radius + e.radius) player.hp -= 0.2;
+        // 碰觸玩家造成傷害
+        if (Math.hypot(player.x - e.x, player.y - e.y) < player.radius + e.radius) {
+          player.hp -= 0.3;
+        }
+
         if (e.hp <= 0) { enemies.splice(i, 1); kills++; }
       }
 
+      // 粒子與攻擊碰撞
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
+        if (p.vx) p.x += p.vx;
+        if (p.vy) p.y += p.vy;
+        p.life--;
+
+        if (p.isAttack) {
+          enemies.forEach(e => {
+            if (Math.hypot(e.x - p.x, e.y - p.y) < e.radius + p.radius) {
+              e.hp -= p.damage;
+              p.life = 0; // 命中後消滅
+            }
+          });
+        }
+
         if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // 死亡判定
+      if (player.hp <= 0) {
+        player.hp = 0;
+        gameState = 'GAMEOVER';
+        document.getElementById('final-stats').textContent = `使用角色: ${charData.name} | 擊殺數: ${kills}`;
+        document.getElementById('gameover-overlay').classList.remove('hidden');
       }
 
       document.getElementById('hp-val').textContent = Math.ceil(player.hp);
@@ -137,47 +424,34 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 100, 0, ${p.life / p.maxLife})`;
-        ctx.fill();
-      });
+      if (gameState === 'PLAYING') {
+        // 畫粒子與技能攻擊
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * (p.life / p.maxLife), 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
 
-      ctx.save();
-      ctx.translate(player.x, player.y);
-      ctx.rotate(player.angle);
-      ctx.beginPath();
-      ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#ff4500';
-      ctx.fill();
-      ctx.fillRect(0, -3, 20, 6);
-      ctx.restore();
+        // 畫敵人 (紅衣混混)
+        enemies.forEach(e => {
+          drawHumanoid(e.x, e.y, e.radius, '#c62828', e.x > player.x, true);
+        });
 
-      enemies.forEach(e => {
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#00bfff';
-        ctx.fill();
-      });
-    }
-
-    function loop(timestamp) {
-      if (player.hp > 0) {
-        update(timestamp);
-        draw();
-        requestAnimationFrame(loop);
-      } else {
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ff4500';
-        ctx.font = '30px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+        // 畫玩家 (LF2 風格)
+        const charData = CHARACTERS[selectedCharIndex];
+        drawHumanoid(player.x, player.y, player.radius, charData.color, player.isFacingLeft, false);
       }
     }
 
-    requestAnimationFrame(loop);
+    function gameLoop(timestamp) {
+      update(timestamp);
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    setupControls();
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>

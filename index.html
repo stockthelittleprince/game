@@ -1,135 +1,139 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>每日固定清單</title>
+<title>交易策略清單</title>
 <style>
+:root{--bg:#07111f;--line:#263b59;--text:#edf4ff;--muted:#91a5c3;--cyan:#55d6e8;--blue:#5798ff;--pink:#ff6f91;--teal:#55dfc4;--purple:#b38aff}
 *{box-sizing:border-box}
-body{
-  margin:0;min-height:100vh;padding:30px 15px;
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-  background:#0b1120;color:#edf4ff
-}
-.container{max-width:650px;margin:auto}
-h1{font-size:32px;margin-bottom:8px}
-.subtitle{color:#9aabc4;line-height:1.7}
-.panel{
-  margin-top:25px;padding:22px;
-  background:#131d30;border:1px solid #293750;
-  border-radius:20px
-}
-.form{display:flex;gap:10px}
-input[type=text]{
-  flex:1;min-width:0;padding:14px;
-  background:#0b1425;border:1px solid #34435c;
-  border-radius:10px;color:white;font-size:16px
-}
-button{
-  padding:12px 16px;border:0;border-radius:10px;
-  cursor:pointer;font-weight:bold
-}
-.add{background:#55d6e8;color:#07131c}
-.info{
-  display:flex;justify-content:space-between;
-  gap:10px;margin:24px 0 12px;
-  color:#9aabc4;font-size:13px
-}
-#count{color:#55d6e8}
-.track{
-  height:6px;background:#26344b;
-  border-radius:10px;overflow:hidden;margin-bottom:20px
-}
-#progress{
-  height:100%;width:0%;
-  background:linear-gradient(90deg,#55d6e8,#8b9cff);
-  transition:width .2s
-}
-.task{
-  display:flex;align-items:center;gap:12px;
-  padding:14px;margin-bottom:10px;
-  background:#1a2740;border:1px solid #293750;
-  border-radius:12px
-}
-.task input{width:21px;height:21px;accent-color:#55d6e8;flex-shrink:0}
-.task-name{flex:1;overflow-wrap:anywhere;line-height:1.5}
-.task.done .task-name{color:#8493aa;text-decoration:line-through}
-.delete{background:transparent;color:#ff7285}
-.empty{
-  padding:28px 12px;text-align:center;
-  color:#9aabc4;line-height:1.8
-}
-.bottom{
-  display:flex;justify-content:space-between;
-  align-items:center;flex-wrap:wrap;gap:12px;
-  margin-top:18px;color:#9aabc4;font-size:12px
-}
-.reset{background:transparent;color:#9aabc4}
-.note{
-  margin-top:18px;padding:12px;
-  background:#102b39;border-radius:10px;
-  color:#a8dce5;font-size:12px;line-height:1.8
-}
-@media(max-width:450px){
-  .form{flex-direction:column}
-  .add{width:100%}
-  .panel{padding:15px}
-  h1{font-size:28px}
-}
+body{margin:0;padding:18px;background:radial-gradient(ellipse at top,#10233d 0,#07111f 58%);color:var(--text);font:14px/1.45 Arial,"Microsoft JhengHei",sans-serif}
+.container{max-width:1200px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding:4px 0 14px;margin-bottom:14px}
+.brand{color:#ffc75e;font-size:11px;letter-spacing:2px;font-weight:bold}
+h1{font-size:clamp(23px,3vw,31px);margin:3px 0}
+.subtitle{font-size:12px;color:var(--muted)}
+.stats{min-width:190px;text-align:right;color:var(--muted);font-size:12px}
+#count{color:var(--cyan);font-weight:bold;font-size:15px}
+.track{height:5px;background:#23334a;border-radius:10px;overflow:hidden;margin-top:7px}
+#progress{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:width .2s}
+.import-panel,.card,.footer{background:linear-gradient(135deg,#0f1d31,#0b1728);border:1px solid var(--line);border-radius:13px}
+.import-panel{padding:12px;margin-bottom:13px}
+.import-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+h2{font-size:15px;margin:0}
+.hint{font-size:11px;color:var(--muted)}
+textarea{width:100%;min-height:76px;resize:vertical;background:#071321;border:1px solid #30445f;color:var(--text);border-radius:9px;padding:10px;font:13px/1.5 Arial,"Microsoft JhengHei",sans-serif}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+button{border:0;border-radius:8px;padding:8px 11px;cursor:pointer;font-weight:bold;font-size:12px}
+.primary{background:linear-gradient(100deg,#4acde5,#5388ff);color:#061321}
+.secondary{background:#1a2a42;color:#dbe8fa;border:1px solid #344966}
+.danger{background:transparent;color:#ff91a4;border:1px solid #593246}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.card{padding:12px;min-width:0}
+.card h2{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.card h2 span:first-child{display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;color:var(--muted);white-space:nowrap}
+.bull{border-color:#235d91}.bull h2{color:#62baff;border-color:#235d91}
+.special{border-color:#1d716f}.special h2{color:var(--teal);border-color:#1d716f}
+.bear{border-color:#77304b}.bear h2{color:var(--pink);border-color:#77304b}
+.other{border-color:#59428c}.other h2{color:var(--purple);border-color:#59428c}
+.task{display:flex;align-items:flex-start;gap:8px;padding:5px 2px;border-radius:6px}
+.task:hover{background:#15253a}
+.task input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:var(--cyan);cursor:pointer}
+.task-name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12.5px}
+.task.done .task-name{color:#71839c;text-decoration:line-through}
+.del{padding:1px 5px;background:transparent;color:#7488a4;font-size:11px;opacity:.6}
+.del:hover{opacity:1;color:#ff8197}
+.empty{padding:12px;color:var(--muted);font-size:12px}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;color:var(--muted);font-size:11px}
+#date{color:#c7d6ed}
+@media(max-width:720px){body{padding:11px}.grid{grid-template-columns:1fr}.stats{min-width:115px}.subtitle{max-width:260px}.import-head{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
 <div class="container">
-  <div style="color:#55d6e8;font-size:12px;letter-spacing:3px">
-    DAILY CHECKLIST SYSTEM
+<header>
+  <div>
+    <div class="brand">TRADING SYSTEM / DAILY CHECKLIST</div>
+    <h1>交易策略清單</h1>
+    <div class="subtitle">整段貼上即可自動分行匯入・每日重置勾選・策略文字永久保留</div>
   </div>
-  <h1>每日固定清單</h1>
-  <div class="subtitle">
-    固定事項永久保留，每天重新勾選即可。
+  <div class="stats">
+    <div id="date"></div>
+    <div id="count">0 / 0 完成</div>
+    <div class="track"><div id="progress"></div></div>
   </div>
+</header>
 
-  <div class="panel">
-    <form id="form" class="form">
-      <input id="input" type="text" maxlength="120"
-        placeholder="輸入事項，例如：洗衣服、洗碗"
-        autocomplete="off">
-      <button class="add" type="submit">＋ 新增事項</button>
-    </form>
-
-    <div class="info">
-      <span id="date"></span>
-      <span id="count">0 / 0 完成</span>
-    </div>
-
-    <div class="track">
-      <div id="progress"></div>
-    </div>
-
-    <div id="list"></div>
-
-    <div class="bottom">
-      <span>固定事項會一直保留</span>
-      <button id="reset" class="reset" type="button">
-        取消全部勾選
-      </button>
-    </div>
-
-    <div class="note">
-      每日凌晨 00:00 自動重置勾選狀態，保留所有事項文字。
-      資料儲存在目前瀏覽器中。
-    </div>
+<section class="import-panel">
+  <div class="import-head">
+    <h2>＋ 批次匯入策略</h2>
+    <span class="hint">一行一個策略；可直接貼上整段文字，自動忽略空白行及重複項目。</span>
   </div>
+  <textarea id="bulkInput" placeholder="把整段策略貼在這裡，每行一個策略"></textarea>
+  <div class="actions">
+    <button class="primary" id="importBtn" type="button">匯入清單</button>
+    <button class="secondary" id="sampleBtn" type="button">填入範例策略</button>
+    <button class="secondary" id="resetBtn" type="button">取消全部勾選</button>
+    <button class="danger" id="clearDoneBtn" type="button">刪除已勾選項目</button>
+  </div>
+</section>
+
+<div class="grid">
+  <section class="card bull">
+    <h2><span>↗ 多頭關鍵訊號</span><span class="badge" id="bullCount">0 / 0</span></h2>
+    <div id="bullList"></div>
+  </section>
+  <section class="card special">
+    <h2><span>✦ 小策略／特殊策略</span><span class="badge" id="specialCount">0 / 0</span></h2>
+    <div id="specialList"></div>
+  </section>
+  <section class="card bear">
+    <h2><span>↘ 空單策略</span><span class="badge" id="bearCount">0 / 0</span></h2>
+    <div id="bearList"></div>
+  </section>
+  <section class="card other">
+    <h2><span>⚙ 其他／未分類</span><span class="badge" id="otherCount">0 / 0</span></h2>
+    <div id="otherList"></div>
+  </section>
+</div>
+
+<div class="footer">
+  <span>資料儲存在目前瀏覽器；日期變更時只重置勾選，不刪除策略。</span>
+  <span id="saveStatus">本機儲存已啟用</span>
+</div>
 </div>
 
 <script>
 const KEY = "daily-checklist-v1";
+
+const STARTER = [
+"下跌段盤底出來(四連K)",
+"2根中以上下影線OR波段底支撐",
+"收盤大跌7%",
+"突破回測下降趨勢線",
+"沒部位+過前黑實體一半的第一根紅K",
+"多頭盤回檔出現黑K下跌穿過月均線且遇到頸線支撐0.3%內",
+"VIX恐慌指數收盤超過45",
+"小策略 紅K過前實體最高進場",
+"特殊策略 大盤跌4-7%",
+"特殊策略黑後第一根站上五均",
+"特殊策略 五均上收紅即可",
+"特殊策略 封關結束第一天收盤進場",
+"空單策略 回測突破頸線",
+"空單策略 新的一波上漲完下跌到月線/季線0.5%內",
+"空單策略 上升趨勢線跌破回測",
+"空單策略 收紅遇壓下降趨勢線",
+"空單策略 第一根突破5.10.20均兩天內收黑",
+"空單策略 1%以上黑收盤5/10/20均下+兩上漲紅",
+"空單策略 上漲紅量縮碰5/10/20均",
+"空單策略 上漲遇壓/突破又跌破 10%"
+];
+
 let tasks = [];
 let lastDate = getDateKey();
 
-const input = document.getElementById("input");
-const form = document.getElementById("form");
-const list = document.getElementById("list");
+const $ = id => document.getElementById(id);
 
 function getDateKey(){
   const d = new Date();
@@ -140,18 +144,37 @@ function getDateKey(){
   ].join("-");
 }
 
+function makeId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+function category(text){
+  const s = text.trim();
+  if(/^空單策略/.test(s)) return "bear";
+  if(/^(小策略|特殊策略)/.test(s)) return "special";
+  if(/^(其他策略|其他|補充)/.test(s)) return "other";
+  return "bull";
+}
+
 function save(){
-  localStorage.setItem(KEY,JSON.stringify({
-    tasks:tasks,
-    lastDate:lastDate
-  }));
+  try{
+    localStorage.setItem(KEY, JSON.stringify({tasks,lastDate}));
+    $("saveStatus").textContent = "已儲存於本機瀏覽器";
+  }catch(e){
+    $("saveStatus").textContent = "儲存失敗：瀏覽器空間可能不足";
+  }
 }
 
 function load(){
   try{
     const data = JSON.parse(localStorage.getItem(KEY));
     if(data && Array.isArray(data.tasks)){
-      tasks = data.tasks;
+      tasks = data.tasks.map(t => ({
+        ...t,
+        id: t.id || makeId(),
+        text: String(t.text || ""),
+        done: !!t.done
+      }));
       lastDate = data.lastDate || getDateKey();
     }
   }catch(e){
@@ -165,39 +188,74 @@ function load(){
 function checkNewDay(){
   const today = getDateKey();
   if(lastDate !== today){
-    tasks.forEach(task => task.done = false);
+    tasks.forEach(t => t.done = false);
     lastDate = today;
     save();
+    return true;
   }
+  return false;
+}
+
+function addMany(raw){
+  const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const known = new Set(tasks.map(t => t.text.trim().toLowerCase()));
+  const fresh = [];
+
+  for(const text of lines){
+    const key = text.toLowerCase();
+    if(!known.has(key)){
+      fresh.push({id:makeId(),text,done:false});
+      known.add(key);
+    }
+  }
+
+  tasks.push(...fresh);
+  save();
+  render();
+
+  return {
+    lines: lines.length,
+    added: fresh.length,
+    duplicates: lines.length - fresh.length
+  };
 }
 
 function render(){
-  document.getElementById("date").textContent =
-    new Intl.DateTimeFormat("zh-TW",{
-      year:"numeric",month:"2-digit",day:"2-digit",
-      weekday:"short"
-    }).format(new Date());
+  $("date").textContent = new Intl.DateTimeFormat("zh-TW",{
+    year:"numeric",month:"2-digit",day:"2-digit",weekday:"short"
+  }).format(new Date());
 
-  list.innerHTML = "";
+  const targets = {
+    bull:$("bullList"),
+    special:$("specialList"),
+    bear:$("bearList"),
+    other:$("otherList")
+  };
 
-  if(tasks.length === 0){
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent = "目前沒有事項，請在上方新增固定行程。";
-    list.appendChild(empty);
-  }
+  Object.values(targets).forEach(el => el.replaceChildren());
 
-  tasks.forEach(task=>{
+  const counts = {
+    bull:{all:0,done:0},
+    special:{all:0,done:0},
+    bear:{all:0,done:0},
+    other:{all:0,done:0}
+  };
+
+  tasks.forEach(task => {
+    const cat = category(task.text);
+    const c = counts[cat];
+    c.all++;
+    if(task.done) c.done++;
+
     const row = document.createElement("div");
     row.className = "task" + (task.done ? " done" : "");
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = task.done;
-    checkbox.setAttribute("aria-label","完成 "+task.text);
-
-    checkbox.addEventListener("change",()=>{
-      task.done = checkbox.checked;
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = task.done;
+    cb.setAttribute("aria-label","完成 " + task.text);
+    cb.addEventListener("change",() => {
+      task.done = cb.checked;
       save();
       render();
     });
@@ -207,59 +265,80 @@ function render(){
     name.textContent = task.text;
 
     const del = document.createElement("button");
-    del.className = "delete";
+    del.className = "del";
     del.type = "button";
-    del.textContent = "刪除";
-
-    del.addEventListener("click",()=>{
-      if(confirm("確定刪除「"+task.text+"」？")){
-        tasks = tasks.filter(t=>t.id !== task.id);
+    del.textContent = "×";
+    del.title = "刪除此策略";
+    del.addEventListener("click",() => {
+      if(confirm("確定刪除「" + task.text + "」？")){
+        tasks = tasks.filter(t => t.id !== task.id);
         save();
         render();
       }
     });
 
-    row.append(checkbox,name,del);
-    list.appendChild(row);
+    row.append(cb,name,del);
+    targets[cat].appendChild(row);
   });
 
-  const completed = tasks.filter(t=>t.done).length;
-  document.getElementById("count").textContent =
-    completed+" / "+tasks.length+" 完成";
+  for(const [cat,c] of Object.entries(counts)){
+    $(cat + "Count").textContent = `${c.done} / ${c.all}`;
+    if(c.all === 0){
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "尚無項目，可從上方貼上匯入。";
+      targets[cat].appendChild(empty);
+    }
+  }
 
-  document.getElementById("progress").style.width =
-    tasks.length ? (completed/tasks.length*100)+"%" : "0%";
+  const completed = tasks.filter(t => t.done).length;
+  $("count").textContent = `${completed} / ${tasks.length} 完成`;
+  $("progress").style.width =
+    tasks.length ? (completed/tasks.length*100) + "%" : "0%";
 }
 
-form.addEventListener("submit",event=>{
-  event.preventDefault();
-  const text = input.value.trim();
-  if(!text) return;
+$("importBtn").addEventListener("click",() => {
+  const raw = $("bulkInput").value;
+  if(!raw.trim()){
+    alert("請先貼上策略文字。");
+    return;
+  }
 
-  tasks.push({
-    id:Date.now().toString()+Math.random().toString(16).slice(2),
-    text:text,
-    done:false
-  });
+  const r = addMany(raw);
+  $("bulkInput").value = "";
 
-  input.value = "";
-  save();
-  render();
-  input.focus();
+  alert(
+    `匯入完成！\n讀取 ${r.lines} 行，新增 ${r.added} 項。` +
+    (r.duplicates ? `\n略過 ${r.duplicates} 行（重複項目）。` : "")
+  );
 });
 
-document.getElementById("reset").addEventListener("click",()=>{
-  tasks.forEach(task=>task.done = false);
+$("sampleBtn").addEventListener("click",() => {
+  $("bulkInput").value = STARTER.join("\n");
+  $("bulkInput").focus();
+});
+
+$("resetBtn").addEventListener("click",() => {
+  tasks.forEach(t => t.done = false);
   save();
   render();
 });
 
-// 頁面開啟時定期檢查日期。
-// 跨日、電腦睡醒或重新切回頁面時，都會自動重置。
+$("clearDoneBtn").addEventListener("click",() => {
+  const n = tasks.filter(t => t.done).length;
+  if(!n){
+    alert("目前沒有已勾選項目。");
+    return;
+  }
+  if(confirm(`確定刪除 ${n} 個已勾選策略？此操作無法復原。`)){
+    tasks = tasks.filter(t => !t.done);
+    save();
+    render();
+  }
+});
+
 function checkAndRender(){
-  const oldDate = lastDate;
-  checkNewDay();
-  if(oldDate !== lastDate) render();
+  if(checkNewDay()) render();
 }
 
 setInterval(checkAndRender,10000);
@@ -270,4 +349,3 @@ load();
 </script>
 </body>
 </html>
-

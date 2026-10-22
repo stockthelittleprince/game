@@ -4,574 +4,374 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>交易策略檢查清單</title>
+<title>交易策略清單</title>
 <style>
-:root {
-  --bg:#0b0e13; --panel:#141923; --panel2:#1a2230;
-  --text:#e8edf5; --muted:#8b98aa; --line:#2b3545;
-  --gold:#d7b46a; --green:#50c995; --red:#ef7777; --blue:#78a9ff;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-  font-size:14px; line-height:1.5;
-}
-header {
-  padding:20px 16px 12px; max-width:1200px; margin:auto;
-}
-h1 { margin:0; font-size:24px; letter-spacing:1px; }
-.subtitle { color:var(--muted); margin-top:5px; font-size:12px; }
-main { max-width:1200px; margin:auto; padding:0 16px 36px; }
-.stats {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:8px; margin:12px 0 16px;
-}
-.stat {
-  background:var(--panel); border:1px solid var(--line);
-  border-radius:10px; padding:12px;
-}
-.stat-label { color:var(--muted); font-size:11px; }
-.stat-value { font-size:23px; font-weight:bold; margin-top:2px; }
-.progress { height:5px; background:#283142; border-radius:9px; overflow:hidden; margin-top:8px; }
-.progress > div { height:100%; width:0; background:var(--gold); transition:width .2s; }
-.panel {
-  background:var(--panel); border:1px solid var(--line);
-  border-radius:12px; padding:14px; margin-bottom:14px;
-}
-.panel-title { font-weight:bold; margin-bottom:10px; }
-textarea,input,select,button {
-  font:inherit; color:var(--text);
-}
-textarea,input,select {
-  background:#0d121a; border:1px solid var(--line);
-  border-radius:8px; padding:10px; width:100%; outline:none;
-}
-textarea:focus,input:focus,select:focus { border-color:var(--gold); }
-textarea { min-height:100px; resize:vertical; }
-button {
-  border:1px solid var(--line); background:var(--panel2);
-  border-radius:8px; padding:8px 12px; cursor:pointer;
-}
-button:hover { filter:brightness(1.15); }
-button.primary { background:var(--gold); color:#17140c; border-color:var(--gold); font-weight:bold; }
-button.danger { color:#ffaaaa; }
-button.small { padding:5px 8px; font-size:12px; }
-button:disabled { opacity:.4; cursor:not-allowed; }
-.toolbar { display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; }
-.add-row { display:grid; grid-template-columns:1fr 150px auto; gap:8px; margin-top:10px; }
-.hint { color:var(--muted); font-size:12px; margin-top:7px; }
-.search-row { display:flex; gap:8px; margin-bottom:12px; }
-.search-row input { flex:1; }
-.strategy-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.category {
-  background:var(--panel); border:1px solid var(--line);
-  border-radius:12px; overflow:hidden; min-width:0;
-}
-.category-head {
-  padding:12px 13px; border-bottom:1px solid var(--line);
-  display:flex; justify-content:space-between; align-items:center; gap:8px;
-}
-.category-head h2 { font-size:14px; margin:0; }
-.count { font-size:11px; color:var(--muted); }
-.task-list { padding:5px 10px 10px; }
-.task {
-  display:flex; gap:9px; align-items:flex-start;
-  padding:9px 2px; border-bottom:1px solid #222b38;
-}
-.task:last-child { border-bottom:0; }
-.task input[type=checkbox] {
-  width:17px; height:17px; margin:2px 0 0; flex-shrink:0;
-  accent-color:var(--green); cursor:pointer;
-}
-.task-text { flex:1; min-width:0; overflow-wrap:anywhere; }
-.task.done .task-text { color:#738092; text-decoration:line-through; }
-.task-actions { display:flex; gap:4px; flex-shrink:0; }
-.empty { color:var(--muted); padding:14px 2px; font-size:12px; }
-.tag {
-  display:inline-block; font-size:10px; color:var(--muted);
-  border:1px solid var(--line); border-radius:4px; padding:1px 5px;
-  margin-bottom:3px;
-}
-footer { color:var(--muted); font-size:11px; text-align:center; padding:15px; }
-@media(max-width:700px) {
-  .strategy-grid { grid-template-columns:1fr; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .add-row { grid-template-columns:1fr 1fr; }
-  .add-row button { grid-column:1/-1; }
-  h1 { font-size:21px; }
-}
+:root{--bg:#07111f;--line:#263b59;--text:#edf4ff;--muted:#91a5c3;--cyan:#55d6e8;--blue:#5798ff;--pink:#ff6f91;--teal:#55dfc4;--purple:#b38aff}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:radial-gradient(ellipse at top,#10233d 0,#07111f 58%);color:var(--text);font:14px/1.45 Arial,"Microsoft JhengHei",sans-serif}
+.container{max-width:1200px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding:4px 0 14px;margin-bottom:14px}
+.brand{color:#ffc75e;font-size:11px;letter-spacing:2px;font-weight:bold}
+h1{font-size:clamp(23px,3vw,31px);margin:3px 0}
+.subtitle{font-size:12px;color:var(--muted)}
+.stats{min-width:190px;text-align:right;color:var(--muted);font-size:12px}
+#count{color:var(--cyan);font-weight:bold;font-size:15px}
+.track{height:5px;background:#23334a;border-radius:10px;overflow:hidden;margin-top:7px}
+#progress{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:width .2s}
+.import-panel,.card,.footer{background:linear-gradient(135deg,#0f1d31,#0b1728);border:1px solid var(--line);border-radius:13px}
+.import-panel{padding:12px;margin-bottom:13px}
+.import-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+h2{font-size:15px;margin:0}
+.hint{font-size:11px;color:var(--muted)}
+textarea{width:100%;min-height:76px;resize:vertical;background:#071321;border:1px solid #30445f;color:var(--text);border-radius:9px;padding:10px;font:13px/1.5 Arial,"Microsoft JhengHei",sans-serif}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+button{border:0;border-radius:8px;padding:8px 11px;cursor:pointer;font-weight:bold;font-size:12px}
+.primary{background:linear-gradient(100deg,#4acde5,#5388ff);color:#061321}
+.secondary{background:#1a2a42;color:#dbe8fa;border:1px solid #344966}
+.danger{background:transparent;color:#ff91a4;border:1px solid #593246}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.card{padding:12px;min-width:0}
+.card h2{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.card h2 span:first-child{display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;color:var(--muted);white-space:nowrap}
+.bull{border-color:#235d91}.bull h2{color:#62baff;border-color:#235d91}
+.special{border-color:#1d716f}.special h2{color:var(--teal);border-color:#1d716f}
+.bear{border-color:#77304b}.bear h2{color:var(--pink);border-color:#77304b}
+.other{border-color:#59428c}.other h2{color:var(--purple);border-color:#59428c}
+.task{display:flex;align-items:flex-start;gap:8px;padding:5px 2px;border-radius:6px}
+.task:hover{background:#15253a}
+.task input{width:16px;height:16px;margin:2px 0 0;flex-shrink:0;accent-color:var(--cyan);cursor:pointer}
+.task-name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12.5px}
+.task.done .task-name{color:#71839c;text-decoration:line-through}
+.del{padding:1px 5px;background:transparent;color:#7488a4;font-size:11px;opacity:.6}
+.del:hover{opacity:1;color:#ff8197}
+.empty{padding:12px;color:var(--muted);font-size:12px}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;color:var(--muted);font-size:11px}
+#date{color:#c7d6ed}
+@media(max-width:720px){body{padding:11px}.grid{grid-template-columns:1fr}.stats{min-width:115px}.subtitle{max-width:260px}.import-head{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
+<div class="container">
 <header>
-  <h1>交易策略檢查清單</h1>
-  <div class="subtitle">TRADING STRATEGY SYSTEM · 每次進場前，先確認策略條件</div>
+  <div>
+    <div class="brand">TRADING SYSTEM / DAILY CHECKLIST</div>
+    <h1>交易策略清單</h1>
+    <div class="subtitle">整段貼上即可自動分行匯入・每日重置勾選・策略文字永久保留</div>
+  </div>
+  <div class="stats">
+    <div id="date"></div>
+    <div id="count">0 / 0 完成</div>
+    <div class="track"><div id="progress"></div></div>
+  </div>
 </header>
 
-<main>
-  <section class="stats">
-    <div class="stat">
-      <div class="stat-label">策略總數</div>
-      <div class="stat-value" id="total">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">今日已確認</div>
-      <div class="stat-value" id="checked">0</div>
-      <div class="progress"><div id="progressBar"></div></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">尚未確認</div>
-      <div class="stat-value" id="remaining">0</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">今日日期</div>
-      <div class="stat-value" id="today" style="font-size:16px">--</div>
-    </div>
-  </section>
+<section class="import-panel">
+  <div class="import-head">
+    <h2>＋ 批次匯入策略</h2>
+    <span class="hint">一行一個策略；可直接貼上整段文字，自動忽略空白行及重複項目。</span>
+  </div>
+  <textarea id="bulkInput" placeholder="把整段策略貼在這裡，每行一個策略"></textarea>
+  <div class="actions">
+    <button class="primary" id="importBtn" type="button">匯入清單</button>
+    <button class="secondary" id="selectAllBtn" type="button">全部勾選</button>
+    <button class="secondary" id="sampleBtn" type="button">填入範例策略</button>
+    <button class="secondary" id="resetBtn" type="button">取消全部勾選</button>
+    <button class="danger" id="clearDoneBtn" type="button">刪除已勾選項目</button>
+  </div>
+</section>
 
-  <section class="panel">
-    <div class="panel-title">＋ 批次匯入策略</div>
-    <textarea id="bulkInput" placeholder="每行輸入一個策略，例如：
-下跌段盤底出來(四連K)
-2根中以上下影線OR波段底支撐
-收盤大跌7%
-空單策略 回測突破頸線"></textarea>
-    <div class="toolbar">
-      <button class="primary" id="importBtn">匯入策略</button>
-      <button id="sampleBtn">載入原始策略範例</button>
-      <button id="clearInputBtn">清空輸入框</button>
-    </div>
-    <div class="hint">每行一項；重複策略會避免重複新增。匯入不會清空原有策略。</div>
+<div class="grid">
+  <section class="card bull">
+    <h2><span>↗ 多頭關鍵訊號</span><span class="badge" id="bullCount">0 / 0</span></h2>
+    <div id="bullList"></div>
   </section>
-
-  <section class="panel">
-    <div class="panel-title">＋ 單筆新增策略</div>
-    <div class="add-row">
-      <input id="newTask" placeholder="輸入策略名稱">
-      <select id="newCategory">
-        <option value="bull">多單策略</option>
-        <option value="special">特殊策略</option>
-        <option value="bear">空單策略</option>
-        <option value="other">其他策略</option>
-      </select>
-      <button class="primary" id="addBtn">新增</button>
-    </div>
+  <section class="card special">
+    <h2><span>✦ 小策略／特殊策略</span><span class="badge" id="specialCount">0 / 0</span></h2>
+    <div id="specialList"></div>
   </section>
-
-  <section class="panel">
-    <div class="panel-title">清單操作</div>
-    <div class="search-row">
-      <input id="searchInput" placeholder="搜尋策略名稱…">
-    </div>
-    <div class="toolbar">
-      <button id="checkAllBtn">全部勾選</button>
-      <button id="uncheckAllBtn">全部取消勾選</button>
-      <button id="deleteCheckedBtn" class="danger">刪除已勾選項目</button>
-      <button id="resetTodayBtn">重置今日勾選</button>
-      <button id="exportBtn">匯出備份</button>
-      <button id="importBackupBtn">還原備份檔</button>
-      <input type="file" id="backupFile" accept=".json,application/json" hidden>
-    </div>
-    <div class="hint">「全部取消勾選」只取消完成狀態；「刪除已勾選項目」會刪除策略，操作前請確認。</div>
+  <section class="card bear">
+    <h2><span>↘ 空單策略</span><span class="badge" id="bearCount">0 / 0</span></h2>
+    <div id="bearList"></div>
   </section>
+  <section class="card other">
+    <h2><span>⚙ 其他／未分類</span><span class="badge" id="otherCount">0 / 0</span></h2>
+    <div id="otherList"></div>
+  </section>
+</div>
 
-  <section class="strategy-grid" id="strategyGrid"></section>
-  <footer>資料儲存在目前瀏覽器。清除網站資料或更換裝置前，請先匯出備份。</footer>
-</main>
+<div class="footer">
+  <span>資料儲存在目前瀏覽器；日期變更時只重置勾選，不刪除策略。</span>
+  <span id="saveStatus">本機儲存已啟用</span>
+</div>
+</div>
 
 <script>
-(function () {
-  "use strict";
+const KEY = "daily-checklist-v1";
 
-  // 沿用先前版本的儲存 key，盡可能讀取已存在的清單。
-  const STORAGE_KEY = "daily-checklist-v1";
-  const BACKUP_VERSION = 1;
+const STARTER = [
+"下跌段盤底出來(四連K)",
+"2根中以上下影線OR波段底支撐",
+"收盤大跌7%",
+"突破回測下降趨勢線",
+"沒部位+過前黑實體一半的第一根紅K",
+"多頭盤回檔出現黑K下跌穿過月均線且遇到頸線支撐0.3%內",
+"VIX恐慌指數收盤超過45",
+"小策略 紅K過前實體最高進場",
+"特殊策略 大盤跌4-7%",
+"特殊策略黑後第一根站上五均",
+"特殊策略 五均上收紅即可",
+"特殊策略 封關結束第一天收盤進場",
+"空單策略 回測突破頸線",
+"空單策略 新的一波上漲完下跌到月線/季線0.5%內",
+"空單策略 上升趨勢線跌破回測",
+"空單策略 收紅遇壓下降趨勢線",
+"空單策略 第一根突破5.10.20均兩天內收黑",
+"空單策略 1%以上黑收盤5/10/20均下+兩上漲紅",
+"空單策略 上漲紅量縮碰5/10/20均",
+"空單策略 上漲遇壓/突破又跌破 10%"
+];
 
-  const categories = {
-    bull: { title: "多單策略", color: "var(--green)" },
-    special: { title: "特殊策略", color: "var(--gold)" },
-    bear: { title: "空單策略", color: "var(--red)" },
-    other: { title: "其他策略", color: "var(--blue)" }
+let tasks = [];
+let lastDate = getDateKey();
+
+const $ = id => document.getElementById(id);
+
+function getDateKey(){
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth()+1).padStart(2,"0"),
+    String(d.getDate()).padStart(2,"0")
+  ].join("-");
+}
+
+function makeId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+function category(text){
+  const s = text.trim();
+  if(/^空單策略/.test(s)) return "bear";
+  if(/^(小策略|特殊策略)/.test(s)) return "special";
+  if(/^(其他策略|其他|補充)/.test(s)) return "other";
+  return "bull";
+}
+
+function save(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify({tasks,lastDate}));
+    $("saveStatus").textContent = "已儲存於本機瀏覽器";
+  }catch(e){
+    $("saveStatus").textContent = "儲存失敗：瀏覽器空間可能不足";
+  }
+}
+
+function load(){
+  try{
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if(data && Array.isArray(data.tasks)){
+      tasks = data.tasks.map(t => ({
+        ...t,
+        id: t.id || makeId(),
+        text: String(t.text || ""),
+        done: !!t.done
+      }));
+      lastDate = data.lastDate || getDateKey();
+    }
+  }catch(e){
+    tasks = [];
+  }
+  checkNewDay();
+  render();
+  save();
+}
+
+function checkNewDay(){
+  const today = getDateKey();
+  if(lastDate !== today){
+    tasks.forEach(t => t.done = false);
+    lastDate = today;
+    save();
+    return true;
+  }
+  return false;
+}
+
+/* 批次匯入：相同名稱不重複新增；文字不同但忽略大小寫後相同時，以新文字取代。 */
+function addMany(raw){
+  const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const existing = new Map(tasks.map(t => [t.text.trim().toLowerCase(), t]));
+  const seenInImport = new Set();
+  let added = 0, replaced = 0, duplicates = 0;
+
+  for(const text of lines){
+    const key = text.toLowerCase();
+    const current = existing.get(key);
+
+    if(current){
+      if(current.text !== text){
+        current.text = text;
+        current.done = false;
+        replaced++;
+      } else {
+        duplicates++;
+      }
+      seenInImport.add(key);
+      continue;
+    }
+
+    if(seenInImport.has(key)){
+      duplicates++;
+      continue;
+    }
+
+    const task = {id:makeId(),text,done:false};
+    tasks.push(task);
+    existing.set(key, task);
+    seenInImport.add(key);
+    added++;
+  }
+
+  save();
+  render();
+
+  return {lines:lines.length,added,replaced,duplicates};
+}
+
+function render(){
+  $("date").textContent = new Intl.DateTimeFormat("zh-TW",{
+    year:"numeric",month:"2-digit",day:"2-digit",weekday:"short"
+  }).format(new Date());
+
+  const targets = {
+    bull:$("bullList"),
+    special:$("specialList"),
+    bear:$("bearList"),
+    other:$("otherList")
   };
 
-  const originalStrategies = [
-    "下跌段盤底出來(四連K)",
-    "2根中以上下影線OR波段底支撐",
-    "收盤大跌7%",
-    "突破回測下降趨勢線",
-    "沒部位+過前黑實體一半的第一根紅K",
-    "多頭盤回檔出現黑K下跌穿過月均線且遇到頸線支撐0.3%內",
-    "VIX恐慌指數收盤超過45",
-    "小策略 紅K過前實體最高進場",
-    "特殊策略 大盤跌4-7%",
-    "特殊策略黑後第一根站上五均",
-    "特殊策略 五均上收紅即可",
-    "特殊策略 封關結束第一天收盤進場",
-    "空單策略 回測突破頸線",
-    "空單策略 新的一波上漲完下跌到月線/季線0.5%內",
-    "空單策略 上升趨勢線跌破回測",
-    "空單策略 收紅遇壓下降趨勢線",
-    "空單策略 第一根突破5.10.20均兩天內收黑",
-    "空單策略 1%以上黑收盤5/10/20均下+兩上漲紅",
-    "空單策略 上漲紅量縮碰5/10/20均",
-    "空單策略 上漲遇壓/突破又跌破 10%"
-  ];
+  Object.values(targets).forEach(el => el.replaceChildren());
 
-  let tasks = [];
-  let lastResetDate = "";
-  let storageWarning = false;
+  const counts = {
+    bull:{all:0,done:0},
+    special:{all:0,done:0},
+    bear:{all:0,done:0},
+    other:{all:0,done:0}
+  };
 
-  const $ = id => document.getElementById(id);
+  tasks.forEach(task => {
+    const cat = category(task.text);
+    const c = counts[cat];
+    c.all++;
+    if(task.done) c.done++;
 
-  function todayString() {
-    const d = new Date();
-    return d.getFullYear() + "-" +
-      String(d.getMonth() + 1).padStart(2, "0") + "-" +
-      String(d.getDate()).padStart(2, "0");
-  }
+    const row = document.createElement("div");
+    row.className = "task" + (task.done ? " done" : "");
 
-  function makeId() {
-    return "t" + Date.now().toString(36) +
-      Math.random().toString(36).slice(2, 8);
-  }
-
-  function inferCategory(text) {
-    const s = text.trim();
-    if (/^空單策略/.test(s)) return "bear";
-    if (/^(小策略|特殊策略)/.test(s)) return "special";
-    if (/^(其他策略|其他|補充)/.test(s)) return "other";
-    return "bull";
-  }
-
-  function normalizeTask(item) {
-    if (typeof item === "string") {
-      const text = item.trim();
-      if (!text) return null;
-      return { id: makeId(), text, category: inferCategory(text), done: false };
-    }
-
-    if (!item || typeof item !== "object") return null;
-
-    const text = String(item.text ?? item.title ?? item.name ?? "").trim();
-    if (!text) return null;
-
-    const rawCategory = item.category;
-    const category = categories[rawCategory] ? rawCategory : inferCategory(text);
-
-    return {
-      id: String(item.id || makeId()),
-      text,
-      category,
-      done: Boolean(item.done ?? item.checked ?? item.completed)
-    };
-  }
-
-  function readStoredData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return false;
-
-      const data = JSON.parse(raw);
-
-      // 支援陣列格式，也支援先前常見的物件格式。
-      let list = Array.isArray(data) ? data :
-        Array.isArray(data.tasks) ? data.tasks :
-        Array.isArray(data.items) ? data.items : null;
-
-      if (!list) return false;
-
-      tasks = list.map(normalizeTask).filter(Boolean);
-
-      if (!Array.isArray(data)) {
-        lastResetDate = String(data.lastResetDate || data.date || "");
-      }
-      return true;
-    } catch (err) {
-      console.error("讀取舊資料失敗：", err);
-      return false;
-    }
-  }
-
-  function save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: BACKUP_VERSION,
-        lastResetDate,
-        tasks
-      }));
-      storageWarning = false;
-    } catch (err) {
-      storageWarning = true;
-      console.error("儲存失敗：", err);
-      alert("瀏覽器無法儲存資料。請先匯出備份，並確認瀏覽器沒有封鎖網站儲存空間。");
-    }
-  }
-
-  function ensureDailyReset() {
-    const today = todayString();
-    if (lastResetDate !== today) {
-      tasks.forEach(task => { task.done = false; });
-      lastResetDate = today;
-      save();
-    }
-  }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, ch => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;",
-      '"': "&quot;", "'": "&#39;"
-    })[ch]);
-  }
-
-  function render() {
-    const grid = $("strategyGrid");
-    const query = $("searchInput").value.trim().toLowerCase();
-    grid.innerHTML = "";
-
-    Object.entries(categories).forEach(([key, meta]) => {
-      const groupTasks = tasks.filter(task =>
-        task.category === key &&
-        task.text.toLowerCase().includes(query)
-      );
-
-      const section = document.createElement("section");
-      section.className = "category";
-      section.innerHTML = `
-        <div class="category-head">
-          <h2 style="color:${meta.color}">${meta.title}</h2>
-          <span class="count">${groupTasks.filter(t => t.done).length}/${groupTasks.length}</span>
-        </div>
-        <div class="task-list">
-          ${groupTasks.length ? groupTasks.map(task => `
-            <div class="task ${task.done ? "done" : ""}" data-id="${escapeHtml(task.id)}">
-              <input type="checkbox" class="task-check"
-                aria-label="確認策略"
-                ${task.done ? "checked" : ""}>
-              <div class="task-text">${escapeHtml(task.text)}</div>
-              <div class="task-actions">
-                <button class="small edit-btn" title="編輯">編輯</button>
-                <button class="small danger delete-btn" title="刪除">×</button>
-              </div>
-            </div>
-          `).join("") : `<div class="empty">目前沒有策略</div>`}
-        </div>`;
-      grid.appendChild(section);
-    });
-
-    const done = tasks.filter(t => t.done).length;
-    $("total").textContent = tasks.length;
-    $("checked").textContent = done;
-    $("remaining").textContent = tasks.length - done;
-    $("today").textContent = todayString();
-    $("progressBar").style.width = tasks.length ? (done / tasks.length * 100) + "%" : "0%";
-  }
-
-  function addMany(raw) {
-    const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    if (!lines.length) {
-      alert("請先輸入策略，每行一個。");
-      return;
-    }
-
-    let added = 0, duplicates = 0;
-    const existing = new Set(tasks.map(t => t.text.trim().toLowerCase()));
-
-    lines.forEach(text => {
-      const normalized = text.toLowerCase();
-      if (existing.has(normalized)) {
-        duplicates++;
-        return;
-      }
-
-      tasks.push({
-        id: makeId(),
-        text,
-        category: inferCategory(text),
-        done: false
-      });
-      existing.add(normalized);
-      added++;
-    });
-
-    save();
-    render();
-    alert(`匯入完成！\n新增：${added} 項\n略過重複：${duplicates} 項`);
-  }
-
-  function addOne() {
-    const text = $("newTask").value.trim();
-    if (!text) {
-      alert("請輸入策略名稱。");
-      return;
-    }
-
-    const exists = tasks.some(t => t.text.trim().toLowerCase() === text.toLowerCase());
-    if (exists) {
-      alert("這項策略已存在，沒有重複新增。");
-      return;
-    }
-
-    tasks.push({
-      id: makeId(),
-      text,
-      category: $("newCategory").value,
-      done: false
-    });
-
-    $("newTask").value = "";
-    save();
-    render();
-  }
-
-  $("importBtn").addEventListener("click", () => addMany($("bulkInput").value));
-  $("sampleBtn").addEventListener("click", () => {
-    $("bulkInput").value = originalStrategies.join("\n");
-  });
-  $("clearInputBtn").addEventListener("click", () => {
-    $("bulkInput").value = "";
-  });
-  $("addBtn").addEventListener("click", addOne);
-  $("newTask").addEventListener("keydown", e => {
-    if (e.key === "Enter") addOne();
-  });
-  $("searchInput").addEventListener("input", render);
-
-  $("strategyGrid").addEventListener("change", e => {
-    if (!e.target.classList.contains("task-check")) return;
-    const row = e.target.closest(".task");
-    const task = tasks.find(t => t.id === row.dataset.id);
-    if (!task) return;
-    task.done = e.target.checked;
-    save();
-    render();
-  });
-
-  $("strategyGrid").addEventListener("click", e => {
-    const row = e.target.closest(".task");
-    if (!row) return;
-    const task = tasks.find(t => t.id === row.dataset.id);
-    if (!task) return;
-
-    if (e.target.classList.contains("edit-btn")) {
-      const next = prompt("編輯策略名稱：", task.text);
-      if (next === null) return;
-      if (!next.trim()) {
-        alert("策略名稱不可空白。");
-        return;
-      }
-      task.text = next.trim();
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = task.done;
+    cb.setAttribute("aria-label","完成 " + task.text);
+    cb.addEventListener("change",() => {
+      task.done = cb.checked;
       save();
       render();
-    }
+    });
 
-    if (e.target.classList.contains("delete-btn")) {
-      if (!confirm(`確定刪除這項策略？\n${task.text}`)) return;
-      tasks = tasks.filter(t => t.id !== task.id);
-      save();
-      render();
-    }
+    const name = document.createElement("span");
+    name.className = "task-name";
+    name.textContent = task.text;
+
+    const del = document.createElement("button");
+    del.className = "del";
+    del.type = "button";
+    del.textContent = "×";
+    del.title = "刪除此策略";
+    del.addEventListener("click",() => {
+      if(confirm("確定刪除「" + task.text + "」？")){
+        tasks = tasks.filter(t => t.id !== task.id);
+        save();
+        render();
+      }
+    });
+
+    row.append(cb,name,del);
+    targets[cat].appendChild(row);
   });
 
-  $("checkAllBtn").addEventListener("click", () => {
-    tasks.forEach(t => { t.done = true; });
-    save();
-    render();
-  });
-
-  $("uncheckAllBtn").addEventListener("click", () => {
-    tasks.forEach(t => { t.done = false; });
-    save();
-    render();
-  });
-
-  $("deleteCheckedBtn").addEventListener("click", () => {
-    const count = tasks.filter(t => t.done).length;
-    if (!count) {
-      alert("目前沒有已勾選的項目。");
-      return;
+  for(const [cat,c] of Object.entries(counts)){
+    $(cat + "Count").textContent = `${c.done} / ${c.all}`;
+    if(c.all === 0){
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "尚無項目，可從上方貼上匯入。";
+      targets[cat].appendChild(empty);
     }
-    if (!confirm(`確定刪除 ${count} 項已勾選策略？\n此操作無法直接復原，建議先匯出備份。`)) return;
+  }
+
+  const completed = tasks.filter(t => t.done).length;
+  $("count").textContent = `${completed} / ${tasks.length} 完成`;
+  $("progress").style.width =
+    tasks.length ? (completed/tasks.length*100) + "%" : "0%";
+}
+
+/* 全選：勾選所有策略，不會刪除或新增任何項目。 */
+$("selectAllBtn").addEventListener("click",() => {
+  tasks.forEach(t => t.done = true);
+  save();
+  render();
+});
+
+$("importBtn").addEventListener("click",() => {
+  const raw = $("bulkInput").value;
+  if(!raw.trim()){
+    alert("請先貼上策略文字。");
+    return;
+  }
+
+  const r = addMany(raw);
+  $("bulkInput").value = "";
+
+  alert(
+    `匯入完成！\n讀取 ${r.lines} 行，新增 ${r.added} 項，取代 ${r.replaced} 項。` +
+    (r.duplicates ? `\n略過 ${r.duplicates} 行重複項目。` : "")
+  );
+});
+
+$("sampleBtn").addEventListener("click",() => {
+  $("bulkInput").value = STARTER.join("\n");
+  $("bulkInput").focus();
+});
+
+$("resetBtn").addEventListener("click",() => {
+  tasks.forEach(t => t.done = false);
+  save();
+  render();
+});
+
+$("clearDoneBtn").addEventListener("click",() => {
+  const n = tasks.filter(t => t.done).length;
+  if(!n){
+    alert("目前沒有已勾選項目。");
+    return;
+  }
+  if(confirm(`確定刪除 ${n} 個已勾選策略？此操作無法復原。`)){
     tasks = tasks.filter(t => !t.done);
     save();
     render();
-  });
-
-  $("resetTodayBtn").addEventListener("click", () => {
-    if (!confirm("將所有策略取消勾選？策略項目不會被刪除。")) return;
-    tasks.forEach(t => { t.done = false; });
-    lastResetDate = todayString();
-    save();
-    render();
-  });
-
-  $("exportBtn").addEventListener("click", () => {
-    const backup = {
-      version: BACKUP_VERSION,
-      exportedAt: new Date().toISOString(),
-      lastResetDate,
-      tasks
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "交易策略清單備份-" + todayString() + ".json";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  $("importBackupBtn").addEventListener("click", () => $("backupFile").click());
-  $("backupFile").addEventListener("change", async e => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    try {
-      const backup = JSON.parse(await file.text());
-      const list = Array.isArray(backup) ? backup :
-        Array.isArray(backup.tasks) ? backup.tasks :
-        Array.isArray(backup.items) ? backup.items : null;
-
-      if (!list) throw new Error("找不到策略清單");
-
-      if (!confirm(`備份內有 ${list.length} 項策略。\n確定還原？目前清單會被備份內容取代。建議先匯出目前清單。`)) return;
-
-      const restored = list.map(normalizeTask).filter(Boolean);
-      tasks = restored;
-      lastResetDate = String(backup.lastResetDate || "");
-      ensureDailyReset();
-      save();
-      render();
-      alert("備份還原完成。");
-    } catch (err) {
-      alert("備份檔讀取失敗，請確認使用的是本網站匯出的 JSON 檔。");
-    } finally {
-      e.target.value = "";
-    }
-  });
-
-  // 初始化：優先載入既有資料；沒有資料時才載入原始策略。
-  const foundExisting = readStoredData();
-  if (!foundExisting) {
-    tasks = originalStrategies.map(text => ({
-      id: makeId(),
-      text,
-      category: inferCategory(text),
-      done: false
-    }));
-    lastResetDate = todayString();
-    save();
   }
+});
 
-  ensureDailyReset();
-  render();
+function checkAndRender(){
+  if(checkNewDay()) render();
+}
 
-  // 日期跨日後重新載入頁面時會重置勾選；不會自動刪除策略。
-  window.addEventListener("pageshow", () => {
-    ensureDailyReset();
-    render();
-  });
-})();
+setInterval(checkAndRender,10000);
+document.addEventListener("visibilitychange",checkAndRender);
+window.addEventListener("focus",checkAndRender);
+
+load();
 </script>
 </body>
 </html>

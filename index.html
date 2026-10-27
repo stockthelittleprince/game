@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -23,31 +22,56 @@
   box-sizing:border-box;
 }
 
+html{
+  min-height:100%;
+  background:#07111f;
+}
+
 body{
-  margin:0;
+  position:relative;
+  isolation:isolate;
   min-height:100vh;
+  margin:0;
   padding:18px;
-
-  /* 背景圖片完整顯示，不裁切上下部分 */
-  background-color:#07111f;
-  background-image:
-    linear-gradient(
-      rgba(7,17,31,.55),
-      rgba(7,17,31,.65)
-    ),
-    url("./bg.jpg");
-  background-position:center top;
-  background-size:100% auto;
-  background-repeat:no-repeat;
-  background-attachment:scroll;
-
+  background:#07111f;
   color:var(--text);
   font:14px/1.45 Arial,"Microsoft JhengHei",sans-serif;
 }
 
+/* 背景圖片：固定在視窗後方，依照螢幕大小縮放，不裁切 */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+
+  background-image:url("./bg.jpg");
+  background-position:center center;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-color:#07111f;
+}
+
+/* 背景遮罩：讓文字和按鈕更容易閱讀 */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+
+  background:linear-gradient(
+    180deg,
+    rgba(7,17,31,.48),
+    rgba(7,17,31,.68)
+  );
+}
+
 .container{
+  width:100%;
   max-width:1200px;
-  margin:auto;
+  margin:0 auto;
 }
 
 header{
@@ -107,63 +131,17 @@ h1{
 
 .import-panel,
 .card,
-.footer,
-.note-panel{
-  background:linear-gradient(
-    135deg,
-    rgba(15,29,49,.96),
-    rgba(11,23,40,.96)
-  );
+.footer{
+  background:rgba(11,23,40,.88);
   border:1px solid var(--line);
   border-radius:13px;
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
 }
 
 .import-panel{
   padding:12px;
   margin-bottom:13px;
-}
-
-.note-panel{
-  margin-top:13px;
-  margin-bottom:13px;
-  padding:10px 12px;
-}
-
-.note-panel summary{
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-weight:bold;
-  font-size:13px;
-  color:#ffc75e;
-  list-style:none;
-}
-
-.note-panel summary::-webkit-details-marker{
-  display:none;
-}
-
-.note-panel summary:after{
-  content:"＋";
-  color:var(--muted);
-  font-size:16px;
-}
-
-.note-panel[open] summary:after{
-  content:"−";
-}
-
-.note-panel textarea{
-  min-height:100px;
-  margin-top:10px;
-}
-
-.note-meta{
-  font-size:11px;
-  color:var(--muted);
-  font-weight:normal;
 }
 
 .import-head{
@@ -185,10 +163,11 @@ h2{
 }
 
 textarea{
+  display:block;
   width:100%;
   min-height:76px;
   resize:vertical;
-  background:#071321;
+  background:rgba(7,19,33,.94);
   border:1px solid #30445f;
   color:var(--text);
   border-radius:9px;
@@ -215,11 +194,11 @@ button{
   cursor:pointer;
   font-weight:bold;
   font-size:12px;
-  transition:opacity .15s,transform .15s;
+  transition:filter .15s,transform .15s;
 }
 
 button:hover{
-  opacity:.85;
+  filter:brightness(1.12);
 }
 
 button:active{
@@ -238,7 +217,7 @@ button:active{
 }
 
 .danger{
-  background:transparent;
+  background:rgba(30,16,29,.7);
   color:#ff91a4;
   border:1px solid #593246;
 }
@@ -317,12 +296,12 @@ button:active{
   display:flex;
   align-items:flex-start;
   gap:8px;
-  padding:6px 3px;
+  padding:5px 2px;
   border-radius:6px;
 }
 
 .task:hover{
-  background:#15253a;
+  background:rgba(21,37,58,.85);
 }
 
 .task input{
@@ -347,12 +326,12 @@ button:active{
 }
 
 .del{
+  flex-shrink:0;
   padding:1px 5px;
   background:transparent;
   color:#7488a4;
   font-size:15px;
-  opacity:.7;
-  flex-shrink:0;
+  opacity:.75;
 }
 
 .del:hover{
@@ -382,6 +361,7 @@ button:active{
   color:#c7d6ed;
 }
 
+/* 平板與手機：自動切換為單欄版面 */
 @media(max-width:720px){
   body{
     padding:11px;
@@ -404,8 +384,50 @@ button:active{
     flex-direction:column;
   }
 
+  .card{
+    padding:11px;
+  }
+
+  .actions button{
+    padding:9px 10px;
+  }
+}
+
+/* 小尺寸手機 */
+@media(max-width:400px){
+  body{
+    padding:8px;
+  }
+
   header{
     align-items:flex-start;
+    gap:8px;
+  }
+
+  h1{
+    font-size:22px;
+  }
+
+  .brand{
+    font-size:9px;
+    letter-spacing:1px;
+  }
+
+  .subtitle{
+    font-size:11px;
+  }
+
+  .stats{
+    min-width:95px;
+    font-size:10px;
+  }
+
+  #count{
+    font-size:13px;
+  }
+
+  .card h2{
+    font-size:13px;
   }
 }
 </style>
@@ -418,9 +440,7 @@ button:active{
   <div>
     <div class="brand">TRADING SYSTEM / DAILY CHECKLIST</div>
     <h1>交易策略清單</h1>
-    <div class="subtitle">
-      整段貼上即可自動分行匯入・每日重置勾選・策略文字永久保留
-    </div>
+    <div class="subtitle">整段貼上即可自動分行匯入・每日重置勾選・策略文字永久保留</div>
   </div>
 
   <div class="stats">
@@ -435,15 +455,10 @@ button:active{
 <section class="import-panel">
   <div class="import-head">
     <h2>＋ 批次匯入策略</h2>
-    <span class="hint">
-      一行一個策略；可直接貼上整段文字，自動忽略空白行及重複項目。
-    </span>
+    <span class="hint">一行一個策略；可直接貼上整段文字，自動忽略空白行及重複項目。</span>
   </div>
 
-  <textarea
-    id="bulkInput"
-    placeholder="把整段策略貼在這裡，每行一個策略"
-  ></textarea>
+  <textarea id="bulkInput" placeholder="把整段策略貼在這裡，每行一個策略"></textarea>
 
   <div class="actions">
     <button class="primary" id="importBtn" type="button">匯入清單</button>
@@ -490,18 +505,6 @@ button:active{
 
 </div>
 
-<details class="note-panel" id="notePanel">
-  <summary>
-    <span>📝 臨時筆記</span>
-    <span class="note-meta" id="noteStatus">自動儲存於目前瀏覽器</span>
-  </summary>
-
-  <textarea
-    id="notes"
-    placeholder="記下臨時想法、盤中觀察或待確認事項……（自動儲存，不會隨每日清單重置）"
-  ></textarea>
-</details>
-
 <div class="footer">
   <span>資料儲存在目前瀏覽器；日期變更時只重置勾選，不刪除策略。</span>
   <span id="saveStatus">本機儲存已啟用</span>
@@ -545,13 +548,14 @@ function getDateKey(){
 
   return [
     d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0")
+    String(d.getMonth()+1).padStart(2,"0"),
+    String(d.getDate()).padStart(2,"0")
   ].join("-");
 }
 
 function makeId(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  return Date.now().toString(36) +
+    Math.random().toString(36).slice(2,8);
 }
 
 function category(text){
@@ -566,10 +570,9 @@ function category(text){
 
 function save(){
   try{
-    localStorage.setItem(KEY, JSON.stringify({
+    localStorage.setItem(KEY,JSON.stringify({
       tasks,
-      lastDate,
-      notes: $("notes").value
+      lastDate
     }));
 
     $("saveStatus").textContent = "已儲存於本機瀏覽器";
@@ -580,21 +583,17 @@ function save(){
 
 function load(){
   try{
-    const raw = localStorage.getItem(KEY);
-    const data = raw ? JSON.parse(raw) : null;
+    const data = JSON.parse(localStorage.getItem(KEY));
 
     if(data && Array.isArray(data.tasks)){
       tasks = data.tasks.map(t => ({
         ...t,
-        id: t.id || makeId(),
-        text: String(t.text || ""),
-        done: !!t.done
+        id:t.id || makeId(),
+        text:String(t.text || ""),
+        done:!!t.done
       }));
 
       lastDate = data.lastDate || getDateKey();
-
-      $("notes").value =
-        typeof data.notes === "string" ? data.notes : "";
     }
   }catch(e){
     tasks = [];
@@ -609,19 +608,16 @@ function checkNewDay(){
   const today = getDateKey();
 
   if(lastDate !== today){
-    tasks.forEach(t => {
-      t.done = false;
-    });
-
+    tasks.forEach(t => t.done = false);
     lastDate = today;
     save();
-
     return true;
   }
 
   return false;
 }
 
+/* 批次匯入：避免重複項目，保留原有清單 */
 function addMany(raw){
   const lines = raw
     .split(/\r?\n/)
@@ -629,7 +625,7 @@ function addMany(raw){
     .filter(Boolean);
 
   const existing = new Map(
-    tasks.map(t => [t.text.trim().toLowerCase(), t])
+    tasks.map(t => [t.text.trim().toLowerCase(),t])
   );
 
   const seenInImport = new Set();
@@ -661,13 +657,13 @@ function addMany(raw){
     }
 
     const task = {
-      id: makeId(),
+      id:makeId(),
       text,
-      done: false
+      done:false
     };
 
     tasks.push(task);
-    existing.set(key, task);
+    existing.set(key,task);
     seenInImport.add(key);
     added++;
   }
@@ -675,31 +671,36 @@ function addMany(raw){
   save();
   render();
 
-  return {lines: lines.length, added, replaced, duplicates};
+  return {
+    lines:lines.length,
+    added,
+    replaced,
+    duplicates
+  };
 }
 
 function render(){
-  $("date").textContent = new Intl.DateTimeFormat("zh-TW", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short"
+  $("date").textContent = new Intl.DateTimeFormat("zh-TW",{
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit",
+    weekday:"short"
   }).format(new Date());
 
   const targets = {
-    bull: $("bullList"),
-    special: $("specialList"),
-    bear: $("bearList"),
-    other: $("otherList")
+    bull:$("bullList"),
+    special:$("specialList"),
+    bear:$("bearList"),
+    other:$("otherList")
   };
 
   Object.values(targets).forEach(el => el.replaceChildren());
 
   const counts = {
-    bull: {all: 0, done: 0},
-    special: {all: 0, done: 0},
-    bear: {all: 0, done: 0},
-    other: {all: 0, done: 0}
+    bull:{all:0,done:0},
+    special:{all:0,done:0},
+    bear:{all:0,done:0},
+    other:{all:0,done:0}
   };
 
   tasks.forEach(task => {
@@ -707,7 +708,10 @@ function render(){
     const c = counts[cat];
 
     c.all++;
-    if(task.done) c.done++;
+
+    if(task.done){
+      c.done++;
+    }
 
     const row = document.createElement("div");
     row.className = "task" + (task.done ? " done" : "");
@@ -715,9 +719,9 @@ function render(){
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = task.done;
-    cb.setAttribute("aria-label", "完成 " + task.text);
+    cb.setAttribute("aria-label","完成 " + task.text);
 
-    cb.addEventListener("change", () => {
+    cb.addEventListener("change",() => {
       task.done = cb.checked;
       save();
       render();
@@ -732,9 +736,9 @@ function render(){
     del.type = "button";
     del.textContent = "×";
     del.title = "刪除此策略";
-    del.setAttribute("aria-label", "刪除 " + task.text);
+    del.setAttribute("aria-label","刪除 " + task.text);
 
-    del.addEventListener("click", () => {
+    del.addEventListener("click",() => {
       if(confirm("確定刪除「" + task.text + "」？")){
         tasks = tasks.filter(t => t.id !== task.id);
         save();
@@ -742,11 +746,11 @@ function render(){
       }
     });
 
-    row.append(cb, name, del);
+    row.append(cb,name,del);
     targets[cat].appendChild(row);
   });
 
-  for(const [cat, c] of Object.entries(counts)){
+  for(const [cat,c] of Object.entries(counts)){
     $(cat + "Count").textContent = `${c.done} / ${c.all}`;
 
     if(c.all === 0){
@@ -762,25 +766,18 @@ function render(){
   $("count").textContent = `${completed} / ${tasks.length} 完成`;
 
   $("progress").style.width =
-    tasks.length ? (completed / tasks.length * 100) + "%" : "0%";
+    tasks.length ? (completed/tasks.length*100) + "%" : "0%";
 }
 
-$("notes").addEventListener("input", () => {
-  save();
-  $("noteStatus").textContent = "已儲存";
-});
-
-$("notes").addEventListener("blur", () => {
-  $("noteStatus").textContent = "自動儲存於目前瀏覽器";
-});
-
-$("selectAllBtn").addEventListener("click", () => {
+/* 全選：勾選所有策略，不會刪除或新增項目 */
+$("selectAllBtn").addEventListener("click",() => {
   tasks.forEach(t => t.done = true);
   save();
   render();
 });
 
-$("importBtn").addEventListener("click", () => {
+/* 匯入策略 */
+$("importBtn").addEventListener("click",() => {
   const raw = $("bulkInput").value;
 
   if(!raw.trim()){
@@ -789,6 +786,7 @@ $("importBtn").addEventListener("click", () => {
   }
 
   const r = addMany(raw);
+
   $("bulkInput").value = "";
 
   alert(
@@ -797,18 +795,21 @@ $("importBtn").addEventListener("click", () => {
   );
 });
 
-$("sampleBtn").addEventListener("click", () => {
+/* 填入範例策略 */
+$("sampleBtn").addEventListener("click",() => {
   $("bulkInput").value = STARTER.join("\n");
   $("bulkInput").focus();
 });
 
-$("resetBtn").addEventListener("click", () => {
+/* 取消全部勾選 */
+$("resetBtn").addEventListener("click",() => {
   tasks.forEach(t => t.done = false);
   save();
   render();
 });
 
-$("clearDoneBtn").addEventListener("click", () => {
+/* 刪除已勾選項目 */
+$("clearDoneBtn").addEventListener("click",() => {
   const n = tasks.filter(t => t.done).length;
 
   if(!n){
@@ -823,17 +824,20 @@ $("clearDoneBtn").addEventListener("click", () => {
   }
 });
 
+/* 跨日自動重置勾選 */
 function checkAndRender(){
   if(checkNewDay()){
     render();
   }
 }
 
-setInterval(checkAndRender, 10000);
-document.addEventListener("visibilitychange", checkAndRender);
-window.addEventListener("focus", checkAndRender);
+setInterval(checkAndRender,10000);
+
+document.addEventListener("visibilitychange",checkAndRender);
+window.addEventListener("focus",checkAndRender);
 
 load();
 </script>
+
 </body>
 </html>

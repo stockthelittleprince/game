@@ -18,11 +18,19 @@
   --purple:#b38aff;
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
-background:
-  linear-gradient(rgba(7,17,31,0.65), rgba(7,17,31,0.75)),
-  url("./bg.jpg") center center / cover fixed no-repeat;
+body{
+  margin:0;
+  min-height:100vh;
+  padding:18px;
+  background:
+    linear-gradient(rgba(7,17,31,.72),rgba(7,17,31,.82)),
+    url("./bg.jpg") center center / cover fixed no-repeat;
+  background-color:#07111f;
+  color:var(--text);
   font:14px/1.45 Arial,"Microsoft JhengHei",sans-serif;
 }
 
@@ -90,7 +98,7 @@ h1{
 .card,
 .footer,
 .note-panel{
-  background:linear-gradient(135deg,#0f1d31,#0b1728);
+  background:linear-gradient(135deg,rgba(15,29,49,.96),rgba(11,23,40,.96));
   border:1px solid var(--line);
   border-radius:13px;
 }
@@ -98,6 +106,49 @@ h1{
 .import-panel{
   padding:12px;
   margin-bottom:13px;
+}
+
+.note-panel{
+  margin-top:13px;
+  margin-bottom:13px;
+  padding:10px 12px;
+}
+
+.note-panel summary{
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:bold;
+  font-size:13px;
+  color:#ffc75e;
+  list-style:none;
+}
+
+.note-panel summary::-webkit-details-marker{
+  display:none;
+}
+
+.note-panel summary:after{
+  content:"＋";
+  color:var(--muted);
+  font-size:16px;
+}
+
+.note-panel[open] summary:after{
+  content:"−";
+}
+
+.note-panel textarea{
+  min-height:100px;
+  margin-top:10px;
+}
+
+.note-meta{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:normal;
 }
 
 .import-head{
@@ -130,6 +181,11 @@ textarea{
   font:13px/1.5 Arial,"Microsoft JhengHei",sans-serif;
 }
 
+textarea:focus{
+  outline:1px solid var(--cyan);
+  border-color:var(--cyan);
+}
+
 .actions{
   display:flex;
   flex-wrap:wrap;
@@ -144,6 +200,15 @@ button{
   cursor:pointer;
   font-weight:bold;
   font-size:12px;
+  transition:opacity .15s,transform .15s;
+}
+
+button:hover{
+  opacity:.85;
+}
+
+button:active{
+  transform:scale(.98);
 }
 
 .primary{
@@ -237,7 +302,7 @@ button{
   display:flex;
   align-items:flex-start;
   gap:8px;
-  padding:5px 2px;
+  padding:6px 3px;
   border-radius:6px;
 }
 
@@ -270,8 +335,9 @@ button{
   padding:1px 5px;
   background:transparent;
   color:#7488a4;
-  font-size:11px;
-  opacity:.6;
+  font-size:15px;
+  opacity:.7;
+  flex-shrink:0;
 }
 
 .del:hover{
@@ -283,51 +349,6 @@ button{
   padding:12px;
   color:var(--muted);
   font-size:12px;
-}
-
-/* 臨時筆記：預設收合，減少版面占用 */
-.note-panel{
-  margin-top:13px;
-  padding:10px 12px;
-  border-color:#594b30;
-}
-
-.note-panel summary{
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-weight:bold;
-  font-size:13px;
-  color:#ffc75e;
-  list-style:none;
-}
-
-.note-panel summary::-webkit-details-marker{
-  display:none;
-}
-
-.note-panel summary:after{
-  content:"＋";
-  color:var(--muted);
-  font-size:16px;
-}
-
-.note-panel[open] summary:after{
-  content:"−";
-}
-
-.note-panel textarea{
-  min-height:78px;
-  margin-top:10px;
-  border-color:#594b30;
-}
-
-.note-meta{
-  font-size:11px;
-  color:var(--muted);
-  font-weight:normal;
 }
 
 .footer{
@@ -349,6 +370,7 @@ button{
 @media(max-width:720px){
   body{
     padding:11px;
+    background-attachment:scroll;
   }
 
   .grid{
@@ -366,6 +388,10 @@ button{
   .import-head{
     align-items:flex-start;
     flex-direction:column;
+  }
+
+  header{
+    align-items:flex-start;
   }
 }
 </style>
@@ -450,7 +476,6 @@ button{
 
 </div>
 
-<!-- 新增：可收合的臨時筆記區 -->
 <details class="note-panel" id="notePanel">
   <summary>
     <span>📝 臨時筆記</span>
@@ -506,13 +531,13 @@ function getDateKey(){
 
   return [
     d.getFullYear(),
-    String(d.getMonth()+1).padStart(2,"0"),
-    String(d.getDate()).padStart(2,"0")
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
   ].join("-");
 }
 
 function makeId(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 function category(text){
@@ -525,29 +550,24 @@ function category(text){
   return "bull";
 }
 
-/* 儲存策略、勾選狀態及筆記 */
 function save(){
   try{
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({
-        tasks,
-        lastDate,
-        notes:$("notes").value
-      })
-    );
+    localStorage.setItem(KEY, JSON.stringify({
+      tasks,
+      lastDate,
+      notes: $("notes").value
+    }));
 
     $("saveStatus").textContent = "已儲存於本機瀏覽器";
-
   }catch(e){
     $("saveStatus").textContent = "儲存失敗：瀏覽器空間可能不足";
   }
 }
 
-/* 載入原有資料及筆記 */
 function load(){
   try{
-    const data = JSON.parse(localStorage.getItem(KEY));
+    const raw = localStorage.getItem(KEY);
+    const data = raw ? JSON.parse(raw) : null;
 
     if(data && Array.isArray(data.tasks)){
       tasks = data.tasks.map(t => ({
@@ -559,11 +579,9 @@ function load(){
 
       lastDate = data.lastDate || getDateKey();
 
-      // 舊版本沒有 notes 欄位時，預設為空白
       $("notes").value =
         typeof data.notes === "string" ? data.notes : "";
     }
-
   }catch(e){
     tasks = [];
   }
@@ -573,12 +591,13 @@ function load(){
   save();
 }
 
-/* 日期改變時，只重置策略勾選，不清除筆記 */
 function checkNewDay(){
   const today = getDateKey();
 
   if(lastDate !== today){
-    tasks.forEach(t => t.done = false);
+    tasks.forEach(t => {
+      t.done = false;
+    });
 
     lastDate = today;
     save();
@@ -589,7 +608,7 @@ function checkNewDay(){
   return false;
 }
 
-/* 批次匯入：保留原本的重複項目處理方式 */
+/* 批次匯入策略 */
 function addMany(raw){
   const lines = raw
     .split(/\r?\n/)
@@ -629,9 +648,9 @@ function addMany(raw){
     }
 
     const task = {
-      id:makeId(),
+      id: makeId(),
       text,
-      done:false
+      done: false
     };
 
     tasks.push(task);
@@ -644,36 +663,38 @@ function addMany(raw){
   render();
 
   return {
-    lines:lines.length,
+    lines: lines.length,
     added,
     replaced,
     duplicates
   };
 }
 
-/* 更新畫面 */
+/* 顯示清單 */
 function render(){
-  $("date").textContent = new Intl.DateTimeFormat("zh-TW",{
-    year:"numeric",
-    month:"2-digit",
-    day:"2-digit",
-    weekday:"short"
+  $("date").textContent = new Intl.DateTimeFormat("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short"
   }).format(new Date());
 
   const targets = {
-    bull:$("bullList"),
-    special:$("specialList"),
-    bear:$("bearList"),
-    other:$("otherList")
+    bull: $("bullList"),
+    special: $("specialList"),
+    bear: $("bearList"),
+    other: $("otherList")
   };
 
-  Object.values(targets).forEach(el => el.replaceChildren());
+  Object.values(targets).forEach(el => {
+    el.replaceChildren();
+  });
 
   const counts = {
-    bull:{all:0,done:0},
-    special:{all:0,done:0},
-    bear:{all:0,done:0},
-    other:{all:0,done:0}
+    bull: {all: 0, done: 0},
+    special: {all: 0, done: 0},
+    bear: {all: 0, done: 0},
+    other: {all: 0, done: 0}
   };
 
   tasks.forEach(task => {
@@ -682,7 +703,9 @@ function render(){
 
     c.all++;
 
-    if(task.done) c.done++;
+    if(task.done){
+      c.done++;
+    }
 
     const row = document.createElement("div");
 
@@ -692,9 +715,9 @@ function render(){
 
     cb.type = "checkbox";
     cb.checked = task.done;
-    cb.setAttribute("aria-label","完成 " + task.text);
+    cb.setAttribute("aria-label", "完成 " + task.text);
 
-    cb.addEventListener("change",() => {
+    cb.addEventListener("change", () => {
       task.done = cb.checked;
       save();
       render();
@@ -711,22 +734,21 @@ function render(){
     del.type = "button";
     del.textContent = "×";
     del.title = "刪除此策略";
+    del.setAttribute("aria-label", "刪除 " + task.text);
 
-    del.addEventListener("click",() => {
+    del.addEventListener("click", () => {
       if(confirm("確定刪除「" + task.text + "」？")){
         tasks = tasks.filter(t => t.id !== task.id);
-
         save();
         render();
       }
     });
 
-    row.append(cb,name,del);
-
+    row.append(cb, name, del);
     targets[cat].appendChild(row);
   });
 
-  for(const [cat,c] of Object.entries(counts)){
+  for(const [cat, c] of Object.entries(counts)){
     $(cat + "Count").textContent = `${c.done} / ${c.all}`;
 
     if(c.all === 0){
@@ -744,31 +766,33 @@ function render(){
   $("count").textContent = `${completed} / ${tasks.length} 完成`;
 
   $("progress").style.width =
-    tasks.length ? (completed/tasks.length*100) + "%" : "0%";
+    tasks.length
+      ? (completed / tasks.length * 100) + "%"
+      : "0%";
 }
 
-/* 臨時筆記：輸入後立即自動儲存 */
-$("notes").addEventListener("input",() => {
+/* 臨時筆記：輸入後自動儲存 */
+$("notes").addEventListener("input", () => {
   save();
-
   $("noteStatus").textContent = "已儲存";
 });
 
-/* 離開筆記欄位後恢復提示文字 */
-$("notes").addEventListener("blur",() => {
+$("notes").addEventListener("blur", () => {
   $("noteStatus").textContent = "自動儲存於目前瀏覽器";
 });
 
 /* 全部勾選 */
-$("selectAllBtn").addEventListener("click",() => {
-  tasks.forEach(t => t.done = true);
+$("selectAllBtn").addEventListener("click", () => {
+  tasks.forEach(t => {
+    t.done = true;
+  });
 
   save();
   render();
 });
 
-/* 匯入策略 */
-$("importBtn").addEventListener("click",() => {
+/* 匯入清單 */
+$("importBtn").addEventListener("click", () => {
   const raw = $("bulkInput").value;
 
   if(!raw.trim()){
@@ -786,22 +810,24 @@ $("importBtn").addEventListener("click",() => {
   );
 });
 
-/* 填入範例策略 */
-$("sampleBtn").addEventListener("click",() => {
+/* 填入範例 */
+$("sampleBtn").addEventListener("click", () => {
   $("bulkInput").value = STARTER.join("\n");
   $("bulkInput").focus();
 });
 
 /* 取消全部勾選 */
-$("resetBtn").addEventListener("click",() => {
-  tasks.forEach(t => t.done = false);
+$("resetBtn").addEventListener("click", () => {
+  tasks.forEach(t => {
+    t.done = false;
+  });
 
   save();
   render();
 });
 
-/* 刪除已勾選策略 */
-$("clearDoneBtn").addEventListener("click",() => {
+/* 刪除所有已勾選策略 */
+$("clearDoneBtn").addEventListener("click", () => {
   const n = tasks.filter(t => t.done).length;
 
   if(!n){
@@ -811,24 +837,25 @@ $("clearDoneBtn").addEventListener("click",() => {
 
   if(confirm(`確定刪除 ${n} 個已勾選策略？此操作無法復原。`)){
     tasks = tasks.filter(t => !t.done);
-
     save();
     render();
   }
 });
 
-/* 每日檢查：不影響筆記 */
+/* 跨日檢查：只重置勾選狀態，不刪除策略或筆記 */
 function checkAndRender(){
-  if(checkNewDay()) render();
+  if(checkNewDay()){
+    render();
+  }
 }
 
-setInterval(checkAndRender,10000);
+setInterval(checkAndRender, 10000);
 
-document.addEventListener("visibilitychange",checkAndRender);
-window.addEventListener("focus",checkAndRender);
+document.addEventListener("visibilitychange", checkAndRender);
+window.addEventListener("focus", checkAndRender);
 
+/* 啟動 */
 load();
 </script>
-
 </body>
 </html>

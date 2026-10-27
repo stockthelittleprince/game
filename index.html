@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -26,10 +27,20 @@ body{
   margin:0;
   min-height:100vh;
   padding:18px;
-  background:
-    linear-gradient(rgba(7,17,31,.72),rgba(7,17,31,.82)),
-    url("./bg.jpg") center center / cover fixed no-repeat;
+
+  /* 背景圖片完整顯示，不裁切上下部分 */
   background-color:#07111f;
+  background-image:
+    linear-gradient(
+      rgba(7,17,31,.55),
+      rgba(7,17,31,.65)
+    ),
+    url("./bg.jpg");
+  background-position:center top;
+  background-size:100% auto;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+
   color:var(--text);
   font:14px/1.45 Arial,"Microsoft JhengHei",sans-serif;
 }
@@ -98,7 +109,11 @@ h1{
 .card,
 .footer,
 .note-panel{
-  background:linear-gradient(135deg,rgba(15,29,49,.96),rgba(11,23,40,.96));
+  background:linear-gradient(
+    135deg,
+    rgba(15,29,49,.96),
+    rgba(11,23,40,.96)
+  );
   border:1px solid var(--line);
   border-radius:13px;
 }
@@ -370,7 +385,6 @@ button:active{
 @media(max-width:720px){
   body{
     padding:11px;
-    background-attachment:scroll;
   }
 
   .grid{
@@ -608,7 +622,6 @@ function checkNewDay(){
   return false;
 }
 
-/* 批次匯入策略 */
 function addMany(raw){
   const lines = raw
     .split(/\r?\n/)
@@ -662,15 +675,9 @@ function addMany(raw){
   save();
   render();
 
-  return {
-    lines: lines.length,
-    added,
-    replaced,
-    duplicates
-  };
+  return {lines: lines.length, added, replaced, duplicates};
 }
 
-/* 顯示清單 */
 function render(){
   $("date").textContent = new Intl.DateTimeFormat("zh-TW", {
     year: "numeric",
@@ -686,9 +693,7 @@ function render(){
     other: $("otherList")
   };
 
-  Object.values(targets).forEach(el => {
-    el.replaceChildren();
-  });
+  Object.values(targets).forEach(el => el.replaceChildren());
 
   const counts = {
     bull: {all: 0, done: 0},
@@ -702,17 +707,12 @@ function render(){
     const c = counts[cat];
 
     c.all++;
-
-    if(task.done){
-      c.done++;
-    }
+    if(task.done) c.done++;
 
     const row = document.createElement("div");
-
     row.className = "task" + (task.done ? " done" : "");
 
     const cb = document.createElement("input");
-
     cb.type = "checkbox";
     cb.checked = task.done;
     cb.setAttribute("aria-label", "完成 " + task.text);
@@ -724,12 +724,10 @@ function render(){
     });
 
     const name = document.createElement("span");
-
     name.className = "task-name";
     name.textContent = task.text;
 
     const del = document.createElement("button");
-
     del.className = "del";
     del.type = "button";
     del.textContent = "×";
@@ -753,10 +751,8 @@ function render(){
 
     if(c.all === 0){
       const empty = document.createElement("div");
-
       empty.className = "empty";
       empty.textContent = "尚無項目，可從上方貼上匯入。";
-
       targets[cat].appendChild(empty);
     }
   }
@@ -766,12 +762,9 @@ function render(){
   $("count").textContent = `${completed} / ${tasks.length} 完成`;
 
   $("progress").style.width =
-    tasks.length
-      ? (completed / tasks.length * 100) + "%"
-      : "0%";
+    tasks.length ? (completed / tasks.length * 100) + "%" : "0%";
 }
 
-/* 臨時筆記：輸入後自動儲存 */
 $("notes").addEventListener("input", () => {
   save();
   $("noteStatus").textContent = "已儲存";
@@ -781,17 +774,12 @@ $("notes").addEventListener("blur", () => {
   $("noteStatus").textContent = "自動儲存於目前瀏覽器";
 });
 
-/* 全部勾選 */
 $("selectAllBtn").addEventListener("click", () => {
-  tasks.forEach(t => {
-    t.done = true;
-  });
-
+  tasks.forEach(t => t.done = true);
   save();
   render();
 });
 
-/* 匯入清單 */
 $("importBtn").addEventListener("click", () => {
   const raw = $("bulkInput").value;
 
@@ -801,7 +789,6 @@ $("importBtn").addEventListener("click", () => {
   }
 
   const r = addMany(raw);
-
   $("bulkInput").value = "";
 
   alert(
@@ -810,23 +797,17 @@ $("importBtn").addEventListener("click", () => {
   );
 });
 
-/* 填入範例 */
 $("sampleBtn").addEventListener("click", () => {
   $("bulkInput").value = STARTER.join("\n");
   $("bulkInput").focus();
 });
 
-/* 取消全部勾選 */
 $("resetBtn").addEventListener("click", () => {
-  tasks.forEach(t => {
-    t.done = false;
-  });
-
+  tasks.forEach(t => t.done = false);
   save();
   render();
 });
 
-/* 刪除所有已勾選策略 */
 $("clearDoneBtn").addEventListener("click", () => {
   const n = tasks.filter(t => t.done).length;
 
@@ -842,7 +823,6 @@ $("clearDoneBtn").addEventListener("click", () => {
   }
 });
 
-/* 跨日檢查：只重置勾選狀態，不刪除策略或筆記 */
 function checkAndRender(){
   if(checkNewDay()){
     render();
@@ -850,11 +830,9 @@ function checkAndRender(){
 }
 
 setInterval(checkAndRender, 10000);
-
 document.addEventListener("visibilitychange", checkAndRender);
 window.addEventListener("focus", checkAndRender);
 
-/* 啟動 */
 load();
 </script>
 </body>
